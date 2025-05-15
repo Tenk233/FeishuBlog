@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+
+    <!-- 公共格式 -->
+    <Properties>
+        <Property name="PATTERN">
+            %d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] %logger{36} - %msg%n
+        </Property>
+    </Properties>
+
+    <!-- 仅一个 Console Appender -->
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${PATTERN}"/>
+        </Console>
+    </Appenders>
+
+    <!-- 日志器；示例把业务包调到 INFO，其余默认 -->
+    <Loggers>
+        <Logger name="com.feishu.blog" level="DEBUG" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+
+        <!-- 根日志器：INFO 级别，同样只输出到控制台 -->
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+
+</Configuration>
