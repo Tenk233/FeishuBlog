@@ -1,4 +1,4 @@
-package com.feishu.blog.model;
+package com.feishu.blog.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;

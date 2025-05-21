@@ -8,8 +8,10 @@ import lombok.Getter;
 @Getter
 public class BizException extends RuntimeException {
 
+    public static final int INTERNAL_ERROR = 5000;
     public static final int REGISTER_EXISTED_USER = 5001;
 
+    public static final int USER_WRONG_PASSWD = 40001;
     public static final int USER_NOT_EXIST = 40004;
 
     private final int code;

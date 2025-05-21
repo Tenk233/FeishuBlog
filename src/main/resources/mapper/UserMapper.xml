@@ -1,37 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.feishu.blog.mapper.UserMapper">
-  <resultMap id="BaseResultMap" type="com.feishu.blog.model.User">
+  <resultMap id="BaseResultMap" type="com.feishu.blog.entity.User">
     <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="role" jdbcType="CHAR" property="role" />
     <result column="username" jdbcType="VARCHAR" property="username" />
+    <result column="password_hash" jdbcType="VARCHAR" property="passwordHash" />
     <result column="phone" jdbcType="CHAR" property="phone" />
     <result column="email" jdbcType="VARCHAR" property="email" />
-    <result column="role" jdbcType="CHAR" property="role" />
-    <result column="password_hash" jdbcType="VARCHAR" property="passwordHash" />
     <result column="salt" jdbcType="VARCHAR" property="salt" />
+    <result column="register_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="avatar_url" jdbcType="VARCHAR" property="avatarUrl" />
+    <result column="is_blocked" jdbcType="BOOLEAN" property="isBlocked" />
+    <result column="abstract" jdbcType="VARCHAR" property="userAbstract" />
   </resultMap>
-  <sql id="Base_Column_List">
-    id, username, phone, email, `role`, password_hash, salt
+  <sql id="All_Column_List">
+    id, username, phone, email, `role`, password_hash, salt, register_time, avatar_url, is_blocked, abstract
   </sql>
-  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
-    select 
-    <include refid="Base_Column_List" />
-    from tb_user
-    where id = #{id,jdbcType=INTEGER}
-  </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
-    delete from tb_user
-    where id = #{id,jdbcType=INTEGER}
-  </delete>
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.feishu.blog.model.User" useGeneratedKeys="true">
-    insert into tb_user (username, phone, email, 
-      `role`, password_hash, salt
-      )
-    values (#{username,jdbcType=VARCHAR}, #{phone,jdbcType=CHAR}, #{email,jdbcType=VARCHAR}, 
-      #{role,jdbcType=CHAR}, #{passwordHash,jdbcType=VARCHAR}, #{salt,jdbcType=VARCHAR}
-      )
-  </insert>
-  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.feishu.blog.model.User" useGeneratedKeys="true">
+
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.feishu.blog.entity.User" useGeneratedKeys="true">
     insert into tb_user
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="username != null">
@@ -74,7 +61,19 @@
       </if>
     </trim>
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.feishu.blog.model.User">
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="All_Column_List" />
+    from tb_user
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from tb_user
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.feishu.blog.entity.User">
     update tb_user
     <set>
       <if test="username != null">
@@ -98,7 +97,7 @@
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
-  <update id="updateByPrimaryKey" parameterType="com.feishu.blog.model.User">
+  <update id="updateByPrimaryKey" parameterType="com.feishu.blog.entity.User">
     update tb_user
     set username = #{username,jdbcType=VARCHAR},
       phone = #{phone,jdbcType=CHAR},
@@ -108,51 +107,31 @@
       salt = #{salt,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
-  <select id="selectAllUsers" resultMap="BaseResultMap">
-    SELECT
-      id,
-      username,
-      phone,
-      email,
-      `role`,
-      password_hash,
-      salt
-    FROM tb_user
-  </select>
+
+  <sql id="Base_Column_List">
+    id, username, phone, email, `role`, password_hash, salt, register_time, avatar_url, is_blocked
+  </sql>
   <select id="selectAllUsersPaged" resultMap="BaseResultMap">
     SELECT
-      id,
-      username,
-      phone,
-      email,
-      `role`,
-      password_hash,
-      salt
+        <include refid="Base_Column_List" />
     FROM tb_user
            LIMIT #{offset}, #{pageSize}
   </select>
   <select id="selectUserByUsername" resultMap="BaseResultMap">
     SELECT
-      id,
-      username,
-      phone,
-      email,
-      `role`,
-      password_hash,
-      salt
+        <include refid="Base_Column_List" />
     FROM tb_user
     WHERE username=#{username}
   </select>
   <select id="selectUserByEmail" resultMap="BaseResultMap">
     SELECT
-      id,
-      username,
-      phone,
-      email,
-      `role`,
-      password_hash,
-      salt
+        <include refid="Base_Column_List" />
     FROM tb_user
     WHERE email=#{email}
   </select>
+  <update id="updateUserIsBlockByPrimaryKey" parameterType="map">
+    update tb_user
+    set is_blocked = #{isBlocked, jdbcType=TINYINT}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
 </mapper>

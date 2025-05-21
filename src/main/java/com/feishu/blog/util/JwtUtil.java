@@ -16,16 +16,25 @@ public class JwtUtil {
     private static final SecretKey KEY = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
 
     // Token 有效期
-    private static final long ACCESS_TOKEN_EXPIRATION = 15 * 60 * 1000L;   // 15分钟
-    private static final long REFRESH_TOKEN_EXPIRATION = 7 * 24 * 60 * 60 * 1000L; // 7天
+    public static final long ACCESS_TOKEN_EXPIRATION = 15 * 60 * 1000L;   // 15分钟
+    public static final long REFRESH_TOKEN_EXPIRATION = 7 * 24 * 60 * 60 * 1000L; // 7天
 
     // token类型标识
     private static final String CLAIM_TOKEN_TYPE = "tokenType";
     private static final String TYPE_ACCESS = "access";
     private static final String TYPE_REFRESH = "refresh";
 
+    public static final String REFRESH_TOKEN_NAME = "refreshToken";
+    public static final String ACCESS_TOKEN_NAME = "accessToken";
+    public static final String ACCESS_TOKEN_HEAD_NAME = "Authorization";
+    public static final String ACCESS_TOKEN_PREFIX = "Bearer ";
+
     public static final String ITEM_ID = "uid";
     public static final String ITEM_NAME = "uname";
+
+    public static final String JWT_ACCESS_TOKEN_KEY_PREFIX = "user:access_token:";
+    public static final String JWT_REFRESH_TOKEN_KEY_PREFIX = "user:refresh_token:";
+    public static final String JWT_BLACKLIST_PREFIX = "token:blacklist:";
 
     /**
      * 生成 Access Token
@@ -99,5 +108,17 @@ public class JwtUtil {
      */
     public static boolean isRefreshToken(String token) {
         return TYPE_REFRESH.equals(getClaim(token, CLAIM_TOKEN_TYPE));
+    }
+
+    public static String generateAccessTokenKeyForRedis(Integer userId) {
+        return JWT_ACCESS_TOKEN_KEY_PREFIX + userId;
+    }
+
+    public static String generateRefreshTokenKeyForRedis(Integer userId) {
+        return JWT_REFRESH_TOKEN_KEY_PREFIX +  userId;
+    }
+
+    public static String generateTokenKeyForBlackList(String token) {
+        return JWT_BLACKLIST_PREFIX + token;
     }
 }

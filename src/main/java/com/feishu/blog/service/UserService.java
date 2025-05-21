@@ -1,6 +1,7 @@
 package com.feishu.blog.service;
 
-import com.feishu.blog.model.User;
+import com.feishu.blog.dto.GetUserListDTO;
+import com.feishu.blog.entity.User;
 
 import java.util.List;
 
@@ -8,13 +9,6 @@ import java.util.List;
  * 用户业务层接口
  */
 public interface UserService {
-
-    /**
-     * 获取所有用户列表
-     * @return 如果没有用户，返回空列表（而非 null）
-     */
-    List<User> getAllUsers();
-
     /**
      * 根据主键 ID 查询用户
      * @param id 用户 ID
@@ -22,12 +16,7 @@ public interface UserService {
      */
     User getUserById(int id);
 
-    /**
-     * 创建新用户
-     * @param user 待创建的用户对象，ID 字段可不填
-     * @return 创建成功后，包含数据库生成 ID 的 User 对象
-     */
-    User createUser(User user);
+    User getUserByEmail(String email);
 
     /**
      * 更新已有用户信息
@@ -47,8 +36,25 @@ public interface UserService {
 
     /**
      * 注册用户，先查看查看用户是否已存在
+     *
      * @param user 用户
-     * @return 若注册成功，返回true
      */
-    boolean register(User user);
+    void register(User user);
+
+    /** 验证用户名和密码 */
+    User authenticate(String username, String password);
+
+    /**
+     * 获取所有用户列表
+     * @return 如果没有用户，返回空列表（而非 null）
+     */
+    List<User> getAllUsersPaged(GetUserListDTO dto);
+
+    /**
+     * 根据用户Id封禁或解封用户
+     * @param id
+     * @param isBlocked
+     * @return
+     */
+    Boolean updateUserIsBlocked(Integer id, Boolean isBlocked);
 }

@@ -1,6 +1,6 @@
 package com.feishu.blog.exception;
 
-import com.feishu.blog.model.Result;
+import com.feishu.blog.entity.Result;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +26,7 @@ public class GlobalExceptionHandler {
     // 捕获所有异常
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Result<?>> handleGlobalException(Exception ex) {
+        ex.printStackTrace();
         Result<?> body = Result.error(Result.SERVER_ERROR, "Internal Server Error: " + ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.OK);
     }

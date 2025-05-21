@@ -1,13 +1,27 @@
 package com.feishu.blog.controller;
 
+import com.feishu.blog.dto.UserLoginDTO;
 import com.feishu.blog.dto.UserRegisterDTO;
-import com.feishu.blog.model.Result;
-import com.feishu.blog.model.User;
+import com.feishu.blog.entity.Result;
+import com.feishu.blog.entity.User;
+import com.feishu.blog.service.JwtBlackListService;
 import com.feishu.blog.service.UserService;
+import com.feishu.blog.util.JwtUtil;
+import com.feishu.blog.util.SecUtil;
+import io.jsonwebtoken.Claims;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * description:
@@ -17,28 +31,99 @@ import org.springframework.web.bind.annotation.*;
  */
 @Slf4j
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
-    @Resource(name = "userServiceImpl")
+    @Resource
     private UserService userService;
 
+    @Resource
+    private JwtBlackListService jwtBlackListService;
+
     @PostMapping("/login")
-    public Result<?> login() {
+    public Result<?> login(@RequestBody @Valid UserLoginDTO dto,
+                           HttpServletResponse rsp) {
+
+        // 1. 认证（校验用户名/密码）——业务逻辑放 Service
+        User user = userService.authenticate(dto.getUsername(), dto.getPassword());
+
+        if (user == null) {
+            return Result.error(Result.CLIENT_ERROR, "用户名或密码错误");
+        }
+
+        if (user.getIsBlocked() == null || user.getIsBlocked()) {
+            return Result.error(Result.CLIENT_ERROR, "用户已被封禁，请联系管理员");
+        }
+
+        // 2. 生成双 JWT（纯技术性操作，可放工具类）
+        Map<String, Object> claims = Map.of(
+                JwtUtil.ITEM_ID, user.getId(),
+                JwtUtil.ITEM_NAME, user.getUsername()
+        );
+
+        String access  = JwtUtil.generateAccessToken (new HashMap<>(claims));
+        String refresh = JwtUtil.generateRefreshToken(new HashMap<>(claims));
+
+        // 3. 把 refreshToken 写到 HttpOnly Cookie
+        ResponseCookie cookie = ResponseCookie.from(JwtUtil.REFRESH_TOKEN_NAME, refresh)
+                .httpOnly(true)
+                .path("/")
+                .maxAge(Duration.ofDays(7))
+                .build();
+        rsp.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        // 4. 把accessToken写入到header
+        rsp.setHeader(HttpHeaders.AUTHORIZATION, JwtUtil.ACCESS_TOKEN_PREFIX + access);
+
+        // 将token写到Redis
+        jwtBlackListService.addAccessToken(user.getId(), access);
+        jwtBlackListService.addRefreshToken(user.getId(), refresh);
         return Result.success();
     }
 
     @PostMapping("/register")
     public Result<?> register(@RequestBody @Valid UserRegisterDTO dto) {
-        log.debug("dto: {}", dto);
-
         User user = new User();
-        user.setUsername(dto.getEmail());
+        user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
         user.setPhone(dto.getPhone());
-        user.setPasswordHash(dto.getPasswd());
+        user.setPasswordHash(dto.getPassword());
 
         userService.register(user);
+
+        return Result.success();
+    }
+
+    @PostMapping("/register_root")
+    public Result<?> registerRoot(@RequestBody @Valid UserRegisterDTO dto) {
+        if (dto.getInviteCode() == null || !SecUtil.checkInviteCode(dto.getInviteCode())) {
+            return Result.error(Result.CLIENT_ERROR, "邀请码不能为空或者邀请码错误！");
+        }
+
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setPhone(dto.getPhone());
+        user.setPasswordHash(dto.getPassword());
+        user.setRole(User.ROLE_ADMIN);
+
+        userService.register(user);
+
+        return Result.success();
+    }
+
+    @GetMapping("/fresh")
+    public Result<?> fresh(HttpServletRequest req, HttpServletResponse rsp) {
+        String refreshToken = (String) req.getAttribute(JwtUtil.REFRESH_TOKEN_NAME);
+        Claims claims = JwtUtil.parseToken(refreshToken);
+
+        /* refreshToken有效，更新accessToken */
+        Map<String, Object> newClaims = new HashMap<>(claims); // 拷贝全部业务字段
+        String newAccess = JwtUtil.generateAccessToken(newClaims);
+
+        rsp.setHeader(HttpHeaders.AUTHORIZATION, JwtUtil.ACCESS_TOKEN_PREFIX + newAccess);   // 告知前端替换
+
+        // 将token写到Redis
+        jwtBlackListService.addAccessToken((Integer) claims.get(JwtUtil.ITEM_ID), newAccess);
 
         return Result.success();
     }
