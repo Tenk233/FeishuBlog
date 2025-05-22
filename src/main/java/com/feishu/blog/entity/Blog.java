@@ -12,8 +12,9 @@ import java.util.Date;
  */
 @Data
 public class Blog {
-    public static final boolean STATUS_DRAFT = true;
-    public static final boolean STATUS_PUBLISH = false;
+    public static final int STATUS_DRAFT = 0;
+    public static final int STATUS_FORBIDDEN = 1;
+    public static final int STATUS_PUBLISHED = 2;
 
     private Integer id;
     private String title;
@@ -22,5 +23,5 @@ public class Blog {
     private Date createTime;
     private Date lastModified;
     private String coverImageUri;
-    private Boolean isDraft;
+    private Integer status;
 }

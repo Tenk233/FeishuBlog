@@ -75,7 +75,7 @@ public class AccessTokenInterceptor implements HandlerInterceptor {
     private void writeUnauthorized(HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json;charset=UTF-8");
         resp.setStatus(HttpServletResponse.SC_OK);   // 200 + 自定义业务码更友好
-        Result<?> r = Result.error(Result.UNAUTHENTICATED, "Unauthenticated");
+        Result<?> r = Result.errorUnauthenticated("No valid access token or token expired");
         resp.getWriter().write(new ObjectMapper().writeValueAsString(r));
     }
 

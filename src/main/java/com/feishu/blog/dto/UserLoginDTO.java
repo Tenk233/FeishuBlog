@@ -19,4 +19,6 @@ public class UserLoginDTO {
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{6,16}$",
             message = "密码需 6-16 位，含大小写字母和数字")
     private String password;
+
+    private String code;
 }

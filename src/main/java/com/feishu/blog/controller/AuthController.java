@@ -5,6 +5,7 @@ import com.feishu.blog.dto.UserRegisterDTO;
 import com.feishu.blog.entity.Result;
 import com.feishu.blog.entity.User;
 import com.feishu.blog.service.JwtBlackListService;
+import com.feishu.blog.service.LoginAttemptService;
 import com.feishu.blog.service.UserService;
 import com.feishu.blog.util.JwtUtil;
 import com.feishu.blog.util.SecUtil;
@@ -16,7 +17,6 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -40,19 +40,31 @@ public class AuthController {
     @Resource
     private JwtBlackListService jwtBlackListService;
 
+    @Resource
+    private LoginAttemptService loginAttemptService;
+
     @PostMapping("/login")
     public Result<?> login(@RequestBody @Valid UserLoginDTO dto,
                            HttpServletResponse rsp) {
+        if (loginAttemptService.isBlocked(dto.getUsername()) && dto.getCode() == null) {
+            return Result.errorToMuchLoginAttempts(null);
+        }
 
         // 1. 认证（校验用户名/密码）——业务逻辑放 Service
         User user = userService.authenticate(dto.getUsername(), dto.getPassword());
 
         if (user == null) {
-            return Result.error(Result.CLIENT_ERROR, "用户名或密码错误");
+            String msg = "用户名或密码错误";
+            log.warn("{} : {}", dto.getUsername(), msg);
+            if (loginAttemptService.loginFailed(dto.getUsername())) {
+                // TODO
+                return Result.errorToMuchLoginAttempts(null);
+            }
+            return Result.errorClientOperation(msg);
         }
 
         if (user.getIsBlocked() == null || user.getIsBlocked()) {
-            return Result.error(Result.CLIENT_ERROR, "用户已被封禁，请联系管理员");
+            return Result.errorClientOperation("用户已被封禁，请联系管理员");
         }
 
         // 2. 生成双 JWT（纯技术性操作，可放工具类）
@@ -96,7 +108,7 @@ public class AuthController {
     @PostMapping("/register_root")
     public Result<?> registerRoot(@RequestBody @Valid UserRegisterDTO dto) {
         if (dto.getInviteCode() == null || !SecUtil.checkInviteCode(dto.getInviteCode())) {
-            return Result.error(Result.CLIENT_ERROR, "邀请码不能为空或者邀请码错误！");
+            return Result.errorClientOperation("邀请码不能为空或者邀请码错误！");
         }
 
         User user = new User();

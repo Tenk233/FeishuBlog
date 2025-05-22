@@ -20,11 +20,11 @@ public class BlogCreateDTO {
     private String content;
 
     @JsonProperty("tags")
-    private List<String> tagIds;
+    private List<String> tags;
 
     @JsonProperty("cover_image")
     private String coverImageUri;
 
-    @JsonProperty("is_draft")
-    private Boolean isDraft;
+    @JsonProperty("status")
+    private Integer status;
 }

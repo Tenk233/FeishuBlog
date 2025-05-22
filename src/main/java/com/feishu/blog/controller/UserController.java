@@ -58,24 +58,24 @@ public class UserController {
     {
         Integer userLoginId = (Integer) req.getAttribute(JwtUtil.ITEM_ID);
         if (userLoginId == null) {
-            return Result.error(Result.CLIENT_ERROR, "JwtInterceptor设置用户ID失败");
+            return Result.errorClientOperation("JwtInterceptor设置用户ID失败");
         }
 
         // 查看当前登录用户是否为管理员
         User userLogin = userService.getUserById(userLoginId);
         if (userLogin == null || userLogin.getRole() != User.ROLE_ADMIN) {
-            return Result.error(Result.CLIENT_ERROR, "当前用户不属于管理员，无法删除");
+            return Result.errorClientOperation("当前用户不属于管理员，无法删除");
         }
 
         // 查看要删除的用户是否存在
         User userToDelete = userService.getUserById(userId);
         if (userToDelete == null) {
-            return Result.error(Result.NOT_FOUND, "要删除的用户不存在");
+            return Result.errorResourceNotFound("要删除的用户不存在");
         }
 
         // 检查要删除的用户身份
         if (userToDelete.getRole() == User.ROLE_ADMIN) {
-            return Result.error(Result.CLIENT_ERROR, "无法删除管理员用户");
+            return Result.errorClientOperation("无法删除管理员用户");
         }
 
         // 删除用户
@@ -90,7 +90,7 @@ public class UserController {
         User userLogin = userService.getUserById((Integer) req.getAttribute(JwtUtil.ITEM_ID));
         User userSelect = userService.getUserById(userId);
         if (userLogin == null || userSelect == null) {
-            return Result.error(Result.NOT_FOUND, "用户不存在");
+            return Result.errorResourceNotFound("用户不存在");
         }
 
         if (userLogin.getRole() == User.ROLE_ADMIN || userSelect.getId().equals(userLogin.getId())) {
@@ -104,7 +104,7 @@ public class UserController {
             return Result.success(vo);
         }
 
-        return Result.error(Result.CLIENT_ERROR, "没有权限访问该用户");
+        return Result.errorClientOperation("没有权限访问该用户");
     }
 
     @GetMapping("/logout")
@@ -118,24 +118,24 @@ public class UserController {
                            HttpServletRequest req) {
 
         if (dto.getId() == null || dto.getIsBlock() == null) {
-            return Result.error(Result.CLIENT_ERROR, "id和is_block不能为空");
+            return Result.errorClientOperation("id和is_block不能为空");
         }
 
         Integer userLoginId = (Integer) req.getAttribute(JwtUtil.ITEM_ID);
         // 查看当前登录用户是否为管理员
         User userLogin = userService.getUserById(userLoginId);
         if (userLogin == null || userLogin.getRole() != User.ROLE_ADMIN) {
-            return Result.error(Result.CLIENT_ERROR, "当前用户不属于管理员，无法封禁/解封用户");
+            return Result.errorClientOperation("当前用户不属于管理员，无法封禁/解封用户");
         }
 
         // 查看要设置的用户是否存在
         User userToSet = userService.getUserById(dto.getId());
         if (userToSet == null) {
-            return Result.error(Result.NOT_FOUND, "要设置的用户不存在");
+            return Result.errorResourceNotFound("要设置的用户不存在");
         }
 
         if (userToSet.getRole() == User.ROLE_ADMIN) {
-            return Result.error(Result.CLIENT_ERROR, "无法设置管理员用户");
+            return Result.errorClientOperation("无法设置管理员用户");
         }
 
         if (dto.getIsBlock() == true) {
@@ -153,6 +153,14 @@ public class UserController {
         if (userService.getUserByEmail(email) == null) {
             return Result.success();
         }
-        return Result.error(Result.CLIENT_ERROR, "邮箱已占用");
+        return Result.errorClientOperation("邮箱已占用");
+    }
+
+    @GetMapping("/check_username/{username}")
+    public Result<?> checkUsername(@PathVariable String username, HttpServletRequest req) {
+        if (userService.getUserByUsername(username) == null) {
+            return Result.success();
+        }
+        return Result.errorClientOperation("用户名已占用");
     }
 }

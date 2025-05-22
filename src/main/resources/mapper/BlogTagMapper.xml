@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.feishu.blog.mapper.BlogTagMapper">
+    <resultMap id="BlogTagResultMap" type="com.feishu.blog.entity.BlogTag">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="bid" jdbcType="INTEGER" property="blogId" />
+        <result column="tag" jdbcType="VARCHAR" property="tag" />
+    </resultMap>
+
+    <sql id="All_BlogTag_Column_List">
+        id, bid, tag
+    </sql>
+
+    <insert id="createBlogTag" keyColumn="id" keyProperty="id" parameterType="com.feishu.blog.entity.BlogTag" useGeneratedKeys="true">
+        insert into tb_blog_tag
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            bid,
+            tag
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{blogId,jdbcType=INTEGER},
+            #{tag,jdbcType=VARCHAR}
+        </trim>
+    </insert>
+
+    <select id="selectBlogTagByBidAndTag" parameterType="map" resultMap="BlogTagResultMap">
+        SELECT
+        <include refid="All_BlogTag_Column_List" />
+        FROM tb_blog_tag
+        WHERE bid=#{blogId} AND tag=#{tag}
+    </select>
+
+    <select id="selectBlogTagsByBid" parameterType="java.lang.Integer" resultMap="BlogTagResultMap">
+        SELECT
+        <include refid="All_BlogTag_Column_List" />
+        FROM tb_blog_tag
+        WHERE bid=#{blogId}
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        delete from tb_blog_tag
+        where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <delete id="deleteByBlogId" parameterType="java.lang.Integer">
+        delete from tb_blog_tag
+        where bid = #{blogId,jdbcType=INTEGER}
+    </delete>
+</mapper>

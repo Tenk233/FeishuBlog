@@ -13,7 +13,7 @@ import java.util.Base64;
 import java.util.Objects;
 import java.util.Random;
 
-public class CaptchaUtils {
+public class CaptchaUtil {
 
     /**
      * 网络图片地址
@@ -23,12 +23,12 @@ public class CaptchaUtils {
     /**
      * 本地图片地址
      **/
-    private final static String IMG_PATH = "E:/Temp/wallpaper/%s.jpg";
+    private final static String IMG_PATH = "Z:/image/%s.png";
 
     /**
      * 入参校验设置默认值
      **/
-    public static void checkCaptcha(Captcha captcha) {
+    public static void initCaptcha(Captcha captcha) {
         //设置画布宽度默认值
         if (captcha.getCanvasWidth() == null) {
             captcha.setCanvasWidth(320);
@@ -51,7 +51,7 @@ public class CaptchaUtils {
         }
         //设置图片来源默认值
         if (captcha.getPlace() == null) {
-            captcha.setPlace(0);
+            captcha.setPlace(1);
         }
     }
 
@@ -66,26 +66,21 @@ public class CaptchaUtils {
     /**
      * 获取验证码资源图
      **/
-    public static BufferedImage getBufferedImage(Integer place) {
-        try {
-            //随机图片
-            int nonce = getNonceByRange(0, 1000);
-            //获取网络资源图片
-            if (0 == place) {
-                String imgUrl = String.format(IMG_URL, nonce);
-                URL url = new URL(imgUrl);
-                return ImageIO.read(url.openStream());
-            }
-            //获取本地图片
-            else {
-                String imgPath = String.format(IMG_PATH, nonce);
-                File file = new File(imgPath);
-                return ImageIO.read(file);
-            }
-        } catch (Exception e) {
-            System.out.println("获取拼图资源失败");
-            //异常处理
-            return null;
+    public static BufferedImage getBufferedImage(Integer place) throws IOException {
+        //随机图片
+        // int nonce = getNonceByRange(0, 1000);
+        int nonce = 1;
+        //获取网络资源图片
+        if (0 == place) {
+            String imgUrl = String.format(IMG_URL, nonce);
+            URL url = new URL(imgUrl);
+            return ImageIO.read(url.openStream());
+        }
+        //获取本地图片
+        else {
+            String imgPath = String.format(IMG_PATH, nonce);
+            File file = new File(imgPath);
+            return ImageIO.read(file);
         }
     }
 

@@ -5,12 +5,15 @@ import com.feishu.blog.exception.BizException;
 import com.feishu.blog.mapper.UserMapper;
 import com.feishu.blog.entity.User;
 import com.feishu.blog.service.UserService;
+import com.feishu.blog.util.RedisUtil;
 import com.feishu.blog.util.SecUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -19,23 +22,21 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
+    private final RedisUtil redisUtil;
 
     @Override
     public User getUserById(int id) {
-        User user = userMapper.selectByPrimaryKey(id);
-        if (user != null && user.getUserAbstract() == null) {
-            user.setUserAbstract("该用户还没有设置简介");
-        }
-        return user;
+        return userMapper.selectByPrimaryKey(id);
     }
 
     @Override
     public User getUserByEmail(String email) {
-        User user = userMapper.selectUserByEmail(email);
-        if (user != null && user.getUserAbstract() == null) {
-            user.setUserAbstract("该用户还没有设置简介");
-        }
-        return user;
+        return userMapper.selectUserByEmail(email);
+    }
+
+    @Override
+    public User getUserByUsername(String username) {
+        return userMapper.selectUserByUsername(username);
     }
 
     @Override
@@ -126,5 +127,19 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public Boolean updateUserIsBlocked(Integer id, Boolean isBlocked) {
         return userMapper.updateUserIsBlockByPrimaryKey(id, isBlocked) == 1;
+    }
+
+    @Override
+    public Boolean checkUserLoginTimes(Integer id) {
+        String key = SecUtil.generateUserLoginTimesKeyForRedis(id);
+        List<Date> times = (List<Date>) redisUtil.get(key);
+        if (times == null) {
+            times = new ArrayList<>();
+            times.add(new Date());
+            return true;
+        } else {
+//            if ()
+        }
+        return null;
     }
 }

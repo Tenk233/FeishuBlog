@@ -54,4 +54,8 @@ public final class SecUtil {
         final String stdCode = "FeiShu";
         return stdCode.equals(code);
     }
+
+    public static String generateUserLoginTimesKeyForRedis(Integer uid) {
+        return "user:login:times:" + uid;
+    }
 }

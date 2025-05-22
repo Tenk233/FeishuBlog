@@ -18,6 +18,8 @@ public interface UserService {
 
     User getUserByEmail(String email);
 
+    User getUserByUsername(String username);
+
     /**
      * 更新已有用户信息
      * @param user 必须包含 ID
@@ -57,4 +59,6 @@ public interface UserService {
      * @return
      */
     Boolean updateUserIsBlocked(Integer id, Boolean isBlocked);
+
+    Boolean checkUserLoginTimes(Integer id);
 }

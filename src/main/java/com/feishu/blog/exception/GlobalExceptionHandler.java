@@ -27,21 +27,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Result<?>> handleGlobalException(Exception ex) {
         ex.printStackTrace();
-        Result<?> body = Result.error(Result.SERVER_ERROR, "Internal Server Error: " + ex.getMessage());
+        Result<?> body = Result.errorServerInternal("Internal Server Error: " + ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.OK);
     }
 
     // 捕获资源未找到异常
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Result<?>> handleResourceNotFound(ResourceNotFoundException ex) {
-        Result<?> body = Result.error(Result.NOT_FOUND, "Resource Not Found: " + ex.getMessage());
+        Result<?> body = Result.errorResourceNotFound("Resource Not Found: " + ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.OK);
     }
 
     // 404：没有任何 Handler 匹配
     @ExceptionHandler(NoHandlerFoundException.class)
     public Result<?> handle404(NoHandlerFoundException ex) {
-        return Result.error(Result.NOT_FOUND, "Path Not Match: " + ex.getRequestURL());
+        return Result.errorResourceNotFound("Path Not Match: " + ex.getRequestURL());
     }
 
     /* ---------- ① JSON 请求体 (@RequestBody) 校验失败 ---------- */

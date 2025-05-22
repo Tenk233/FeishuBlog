@@ -1,9 +1,12 @@
 package com.feishu.blog.util;
 
 import jakarta.annotation.Resource;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -35,10 +38,11 @@ public class RedisUtil {
 
     /**
      * 设置值并指定过期时间
-     * @param key 键
-     * @param value 值
+     *
+     * @param key     键
+     * @param value   值
      * @param timeout 过期时间
-     * @param unit 过期单位，例如TimeUnit.SECONDS，TimeUnit.HOURS
+     * @param unit    过期单位，例如TimeUnit.SECONDS，TimeUnit.HOURS
      */
     public void setWithExpire(Object key, Object value, long timeout, TimeUnit unit) {
         redisTemplate.opsForValue().set(key, value, timeout, unit);

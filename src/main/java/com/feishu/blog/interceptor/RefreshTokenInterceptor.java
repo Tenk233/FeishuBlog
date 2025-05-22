@@ -84,7 +84,7 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
     private void writeUnauthorized(HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json;charset=UTF-8");
         resp.setStatus(HttpServletResponse.SC_OK);   // 200 + 自定义业务码更友好
-        Result<?> r = Result.error(Result.UNAUTHENTICATED, "refreshToken已失效，请重新登录");
+        Result<?> r = Result.errorUnauthenticated("No valid refresh token or token expired");
         resp.getWriter().write(new ObjectMapper().writeValueAsString(r));
     }
 

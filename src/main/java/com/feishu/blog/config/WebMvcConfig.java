@@ -3,9 +3,11 @@ package com.feishu.blog.config;
 import com.feishu.blog.interceptor.AccessLogInterceptor;
 import com.feishu.blog.interceptor.AccessTokenInterceptor;
 import com.feishu.blog.interceptor.RefreshTokenInterceptor;
+import com.feishu.blog.util.FileUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -28,8 +30,23 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**");
         registry.addInterceptor(accessTokenInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/api/auth/**"); // 白名单 (可选); 按需排除静态资源等
+                .excludePathPatterns(
+                        "/api/auth/**",
+                        "/api/blog/**",
+                        "/files/img/**",
+                        "/api/user/check_email/**",
+                        "/api/user/check_username/**",
+                        "/api/captcha/**"
+                ); // 白名单 (可选); 按需排除静态资源等
         registry.addInterceptor(refreshTokenInterceptor)
                 .addPathPatterns("/api/auth/fresh");
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) { // ← 注意这里
+        // 访问路径：/files/img/xxx.jpg → 映射到磁盘 IMAGE_SAVE_DIR
+        registry.addResourceHandler("/files/img/**")
+                .addResourceLocations("file:" + FileUtil.IMAGE_SAVE_DIR)   // 必须加 file:
+                .setCachePeriod(3600);                     // 浏览器缓存 1h，可选
     }
 }
