@@ -2,6 +2,7 @@ package com.feishu.blog.interceptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feishu.blog.entity.Result;
+import com.feishu.blog.service.JwtBlackListService;
 import com.feishu.blog.util.JwtUtil;
 import com.feishu.blog.util.RedisUtil;
 import io.jsonwebtoken.Claims;
@@ -27,24 +28,31 @@ public class AccessTokenInterceptor implements HandlerInterceptor {
     @Resource
     private RedisUtil redisUtil;
 
+    @Resource
+    private JwtBlackListService jwtBlackListService;
+
     @Override
     public boolean preHandle(HttpServletRequest req, HttpServletResponse rsp, Object handler)
             throws Exception {
 
         String accessToken  = extractAccessToken(req);
 
+
         try {
             /* ② 先验 Access Token */
             if (StringUtils.hasText(accessToken)
                     && !JwtUtil.isTokenExpired(accessToken)
                     && JwtUtil.isAccessToken(accessToken)) {
+
                 /* 绑定用户信息 */
                 bindUser(req, accessToken);
 
-                if (redisUtil.get(JwtUtil.generateTokenKeyForBlackList(accessToken)) == null) {
+                if (jwtBlackListService.checkAccessTokenVersion(
+                        (Integer) req.getAttribute(JwtUtil.ITEM_ID), (Integer) req.getAttribute(JwtUtil.ITEM_VERSION))) {
                     log.debug("accessToken不在黑名单中，放行");
                     return true;
                 }
+
                 log.debug("accessToken在黑名单中");
             }
 
@@ -69,6 +77,7 @@ public class AccessTokenInterceptor implements HandlerInterceptor {
         Claims c = JwtUtil.parseToken(token);
         req.setAttribute(JwtUtil.ITEM_ID,   c.get(JwtUtil.ITEM_ID));
         req.setAttribute(JwtUtil.ITEM_NAME, c.get(JwtUtil.ITEM_NAME));
+        req.setAttribute(JwtUtil.ITEM_VERSION, c.get(JwtUtil.ITEM_VERSION));
         // 若想全局可取，可放到 ThreadLocal / SecurityContext
     }
 

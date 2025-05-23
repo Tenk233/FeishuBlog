@@ -14,9 +14,6 @@ public interface JwtBlackListService {
      * @param refreshToken refreshToken
      */
     void addRefreshToken(Integer userId, String refreshToken);
-
-    void addAccessToken(Integer userId, String accessToken);
-
     /**
      * 将refreshToken拉黑
      * @param refreshToken 用户的refreshToken
@@ -40,4 +37,8 @@ public interface JwtBlackListService {
      * @param userId 用户ID
      */
     void addUserToBlacklist(Integer userId);
+
+    Integer getLatestAccessTokenVersion(Integer userId);
+
+    boolean checkAccessTokenVersion(Integer userId, Integer version);
 }

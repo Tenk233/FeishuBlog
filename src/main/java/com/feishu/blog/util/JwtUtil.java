@@ -31,10 +31,14 @@ public class JwtUtil {
 
     public static final String ITEM_ID = "uid";
     public static final String ITEM_NAME = "uname";
+    public static final String ITEM_VERSION = "version";
 
     public static final String JWT_ACCESS_TOKEN_KEY_PREFIX = "user:access_token:";
     public static final String JWT_REFRESH_TOKEN_KEY_PREFIX = "user:refresh_token:";
     public static final String JWT_BLACKLIST_PREFIX = "token:blacklist:";
+
+    private static final String JWT_ACCESS_TOKEN_KEY_VERSION_PREFIX = "token:access_token:version:";
+    private static final String JWT_ACCESS_TOKEN_KEY_VERSION_BLACKLIST_PREFIX = "token:access_token:version:blacklist:";
 
     /**
      * 生成 Access Token
@@ -120,5 +124,13 @@ public class JwtUtil {
 
     public static String generateTokenKeyForBlackList(String token) {
         return JWT_BLACKLIST_PREFIX + token;
+    }
+
+    public static String generateUserAccessTokenVersionKeyForRedis(Integer userId) {
+        return JWT_ACCESS_TOKEN_KEY_VERSION_PREFIX + userId;
+    }
+
+    public static String generateUserAccessTokenBlacklistVersionKeyForRedis(Integer userId) {
+        return JWT_ACCESS_TOKEN_KEY_VERSION_BLACKLIST_PREFIX + userId;
     }
 }

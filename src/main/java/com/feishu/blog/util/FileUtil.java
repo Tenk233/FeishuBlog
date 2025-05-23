@@ -1,10 +1,7 @@
 package com.feishu.blog.util;
 
 import org.springframework.http.MediaType;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Set;
 
 public class FileUtil {
@@ -16,5 +13,7 @@ public class FileUtil {
     );
 
     /* 保存目录（也可以放到配置文件注入） */
-    public static final String IMAGE_SAVE_DIR = "d:/uploads/img";
+    public static final String IMAGE_SAVE_DIR = "z:/uploads/img";
+
+    public static final String IMAGE_URI_PREFIX = "/files/img";
 }

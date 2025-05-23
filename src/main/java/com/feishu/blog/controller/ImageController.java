@@ -1,22 +1,13 @@
 package com.feishu.blog.controller;
 
 import com.feishu.blog.entity.Result;
-import com.feishu.blog.exception.BizException;
 import com.feishu.blog.service.ImageService;
 import com.feishu.blog.util.JwtUtil;
 import jakarta.annotation.Resource;
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Set;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/image")

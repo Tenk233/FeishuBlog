@@ -45,7 +45,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) { // ← 注意这里
         // 访问路径：/files/img/xxx.jpg → 映射到磁盘 IMAGE_SAVE_DIR
-        registry.addResourceHandler("/files/img/**")
+        registry.addResourceHandler(FileUtil.IMAGE_URI_PREFIX + "/**")
                 .addResourceLocations("file:" + FileUtil.IMAGE_SAVE_DIR)   // 必须加 file:
                 .setCachePeriod(3600);                     // 浏览器缓存 1h，可选
     }

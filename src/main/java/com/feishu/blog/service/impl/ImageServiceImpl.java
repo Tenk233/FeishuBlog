@@ -31,7 +31,7 @@ public class ImageServiceImpl implements ImageService {
         String newName = UUID.randomUUID() + "." + ext;
 
         try {
-            Path dir = Paths.get(FileUtil.IMAGE_SAVE_DIR + "/" + userId);
+            Path dir = Paths.get(FileUtil.IMAGE_SAVE_DIR);
             /* ---------- 保存 ---------- */
             Files.createDirectories(dir);
             Path dest = dir.resolve(newName);
@@ -40,8 +40,9 @@ public class ImageServiceImpl implements ImageService {
             log.warn("文件上传错误: {}", e.getMessage());
             throw new BizException(BizException.INTERNAL_ERROR, "文件上传错误");
         }
-        log.debug("存储文件: {}", userId + "/" + newName);
-        return userId + "/" + newName;
+        String uri = FileUtil.IMAGE_URI_PREFIX + "/" + newName;
+        log.debug("存储文件: {}", uri);
+        return uri;
     }
 
     private static String getExt(MultipartFile file) {

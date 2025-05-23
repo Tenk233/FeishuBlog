@@ -32,22 +32,22 @@ public class JwtBlackListServiceImpl implements JwtBlackListService {
         redisUtil.setWithExpire(key, refreshToken, JwtUtil.REFRESH_TOKEN_EXPIRATION, TimeUnit.MILLISECONDS);
     }
 
-    @Override
-    public void addAccessToken(Integer userId, String accessToken) {
-        String key = JwtUtil.generateAccessTokenKeyForRedis(userId);
-        log.debug("加入accessToken {}:{}", key, accessToken);
-        redisUtil.setWithExpire(key, accessToken, JwtUtil.ACCESS_TOKEN_EXPIRATION, TimeUnit.MILLISECONDS);
-    }
+//    @Override
+//    public void addAccessToken(Integer userId, String accessToken) {
+//        String key = JwtUtil.generateAccessTokenKeyForRedis(userId);
+//        log.debug("加入accessToken {}:{}", key, accessToken);
+//        redisUtil.setWithExpire(key, accessToken, JwtUtil.ACCESS_TOKEN_EXPIRATION, TimeUnit.MILLISECONDS);
+//    }
 
     public void addRefreshTokenToBlacklist(String refreshToken) {
         String key = JwtUtil.generateTokenKeyForBlackList(refreshToken);
         redisUtil.setWithExpire(key, "", JwtUtil.REFRESH_TOKEN_EXPIRATION, TimeUnit.MILLISECONDS);
     }
 
-    public void addAccessTokenToBlacklist(String accessToken) {
-        String key = JwtUtil.generateTokenKeyForBlackList(accessToken);
-        redisUtil.setWithExpire(key, "", JwtUtil.ACCESS_TOKEN_EXPIRATION, TimeUnit.MILLISECONDS);
-    }
+//    public void addAccessTokenToBlacklist(String accessToken) {
+//        String key = JwtUtil.generateTokenKeyForBlackList(accessToken);
+//        redisUtil.setWithExpire(key, "", JwtUtil.ACCESS_TOKEN_EXPIRATION, TimeUnit.MILLISECONDS);
+//    }
 
     @Override
     public Boolean isUserLogin(Integer userId) {
@@ -62,12 +62,9 @@ public class JwtBlackListServiceImpl implements JwtBlackListService {
     @Override
     public void userLogout(Integer userId) {
         /* 拉黑accessToken */
-        String accessTokenKey = JwtUtil.generateAccessTokenKeyForRedis(userId);
-        String accessToken = (String) redisUtil.get(accessTokenKey);
-        if (accessToken != null) {
-            log.debug("拉黑accessToken {}:{}", accessTokenKey, accessToken);
-            addAccessTokenToBlacklist(accessToken);
-        }
+        addAllAccessTokenToBlacklist(userId);
+        log.debug("拉黑accessToken of version <= {} for user : {}", getAccessTokenBlacklistVersion(userId), userId);
+
         /* 拉黑refreshToken */
         String refreshTokenKey = JwtUtil.generateRefreshTokenKeyForRedis(userId);
         String refreshToken = (String) redisUtil.get(refreshTokenKey);
@@ -82,4 +79,46 @@ public class JwtBlackListServiceImpl implements JwtBlackListService {
         userLogout(userId);
     }
 
+
+    @Override
+    public Integer getLatestAccessTokenVersion(Integer userId) {
+        String key = JwtUtil.generateUserAccessTokenVersionKeyForRedis(userId);
+        Integer ver = (Integer) redisUtil.get(key);
+        ver = ver == null ? 0 : ver;
+        ver += 1;
+
+        Integer verBlack = getAccessTokenBlacklistVersion(userId);
+        /* 最新版本号要大于 黑名单版本号*/
+        if (ver <= verBlack) {
+            ver = verBlack + 1;
+        }
+        /* 取一次版本号后自动更新 */
+        redisUtil.set(key, ver);
+        return ver;
+    }
+
+    @Override
+    public boolean checkAccessTokenVersion(Integer userId, Integer version) {
+        String key = JwtUtil.generateUserAccessTokenVersionKeyForRedis(userId);
+        Integer ver = (Integer) redisUtil.get(key);
+        ver = ver == null ? 0 : ver;
+
+        Integer verBlack = getAccessTokenBlacklistVersion(userId);
+
+        return verBlack < version && version <= ver;
+    }
+
+    private Integer getAccessTokenBlacklistVersion(Integer userId) {
+        String key = JwtUtil.generateUserAccessTokenBlacklistVersionKeyForRedis(userId);
+        Integer ver = (Integer) redisUtil.get(key);
+        return ver == null ? 0 : ver;
+    }
+
+    private void addAllAccessTokenToBlacklist(Integer userId) {
+        String key = JwtUtil.generateUserAccessTokenVersionKeyForRedis(userId);
+        Integer ver = (Integer) redisUtil.get(key);
+        ver = ver == null ? 0 : ver;
+        String keyBlacklist = JwtUtil.generateUserAccessTokenBlacklistVersionKeyForRedis(userId);
+        redisUtil.set(keyBlacklist, ver);
+    }
 }

@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.net.BindException;
 import java.util.stream.Collectors;
@@ -42,6 +43,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoHandlerFoundException.class)
     public Result<?> handle404(NoHandlerFoundException ex) {
         return Result.errorResourceNotFound("Path Not Match: " + ex.getRequestURL());
+    }
+
+    // 404：没有任何 Handler 匹配
+    @ExceptionHandler(NoResourceFoundException.class)
+    public Result<?> handle404static(NoResourceFoundException ex) {
+        return Result.errorResourceNotFound("No resources found: " + ex.getResourcePath());
     }
 
     /* ---------- ① JSON 请求体 (@RequestBody) 校验失败 ---------- */

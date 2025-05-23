@@ -163,4 +163,27 @@ public class UserController {
         }
         return Result.errorClientOperation("用户名已占用");
     }
+
+    /**
+     * 用户踢蹬
+     * @param userId
+     * @param req
+     * @return
+     */
+    @PostMapping("/kick/{userId}")
+    public Result<?> kicksUser(@PathVariable Integer userId, HttpServletRequest req) {
+        User userLogin = userService.getUserById((Integer) req.getAttribute(JwtUtil.ITEM_ID));
+        if (userLogin == null ||  userLogin.getRole() != User.ROLE_ADMIN) {
+            return Result.errorClientOperation("仅限管理员操作");
+        }
+
+        User userToKick = userService.getUserById(userId);
+        if (userToKick == null) {
+            return Result.errorResourceNotFound("用户不存在");
+        }
+
+        jwtBlackListService.userLogout(userId);
+
+        return Result.success();
+    }
 }
