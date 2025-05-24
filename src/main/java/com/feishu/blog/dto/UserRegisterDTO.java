@@ -3,6 +3,7 @@ package com.feishu.blog.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
@@ -37,4 +38,10 @@ public class UserRegisterDTO {
     @Pattern(regexp = "^[0-9A-Za-z]{6}$",
             message = "邀请码需6位，含大小写字母和数字")
     private String inviteCode;
+
+    @JsonProperty("captcha_id")
+    private String captchaId;
+
+    @JsonProperty("captcha_code")
+    private Integer captchaCode;
 }

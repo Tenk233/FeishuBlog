@@ -1,7 +1,5 @@
 package com.feishu.blog.service.impl;
 
-import com.feishu.blog.dto.BlogCreateDTO;
-import com.feishu.blog.dto.BlogModifyDTO;
 import com.feishu.blog.dto.GetBlogListDTO;
 import com.feishu.blog.entity.Blog;
 import com.feishu.blog.entity.BlogTag;
@@ -79,11 +77,12 @@ public class BlogServiceImpl implements BlogService {
         if (dto.getPage() != null) {
             page = dto.getPage() - 1;
         }
+        dto.setPage(page * limit);
         if (dto.getLimit() != null) {
             limit = dto.getLimit();
         }
-
-        return blogMapper.selectAllBlogPaged(page * limit, limit);
+        dto.setLimit(limit);
+        return blogMapper.selectAllBlogPaged(dto);
     }
 
     @Override
@@ -103,5 +102,21 @@ public class BlogServiceImpl implements BlogService {
         if (blogMapper.deleteByPrimaryKey(blogId) != 1) {
             throw new BizException(BizException.INTERNAL_ERROR, "数据库删除操作失败");
         }
+    }
+
+    @Override
+    @Transactional
+    public Blog updateBlogStatus(Integer blogId, Integer status) {
+        Blog blog = blogMapper.selectBlogByPrimaryKey(blogId);
+        if (blog == null) {
+            throw new BizException(BizException.USER_WRONG_INPUT, "博客不存在");
+        }
+        blogMapper.updateBlogStatusByPrimaryKey(blogId, status);
+        return blogMapper.selectBlogByPrimaryKey(blogId);
+    }
+
+    @Override
+    public List<String> getAllTags() {
+        return blogTagMapper.selectAllTags();
     }
 }

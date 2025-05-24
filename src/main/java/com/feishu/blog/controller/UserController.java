@@ -1,12 +1,17 @@
 package com.feishu.blog.controller;
 
+import com.feishu.blog.dto.GetAbnormalEventDTO;
 import com.feishu.blog.dto.GetUserListDTO;
 import com.feishu.blog.dto.ModifyUserDTO;
+import com.feishu.blog.dto.UserRegisterDTO;
+import com.feishu.blog.entity.AbnormalEvent;
 import com.feishu.blog.entity.Result;
 import com.feishu.blog.entity.User;
+import com.feishu.blog.service.AbnormalEventService;
 import com.feishu.blog.service.JwtBlackListService;
 import com.feishu.blog.service.UserService;
 import com.feishu.blog.util.JwtUtil;
+import com.feishu.blog.vo.AbnormalEventVO;
 import com.feishu.blog.vo.UserInfoVO;
 import io.jsonwebtoken.Jwt;
 import jakarta.annotation.Nonnull;
@@ -15,6 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -35,6 +41,27 @@ public class UserController {
 
     @Resource
     private JwtBlackListService  jwtBlackListService;
+    @Autowired
+    private AbnormalEventService abnormalEventService;
+
+    @PostMapping("/root_register")
+    public Result<?> rootRegister(@RequestBody @Valid UserRegisterDTO dto,
+                                  HttpServletRequest req) {
+        User userLogin = userService.getUserById((Integer) req.getAttribute(JwtUtil.ITEM_ID));
+        if (userLogin == null || userLogin.getRole() != User.ROLE_ADMIN) {
+            return Result.errorClientOperation("仅限管理员操作");
+        }
+        /* 管理员注册账号时不需要验证码 */
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setPhone(dto.getPhone());
+        user.setPasswordHash(dto.getPassword());
+
+        userService.register(user);
+
+        return Result.success();
+    }
 
     @GetMapping("/list")
     public Result<?> listUsers(
@@ -93,18 +120,44 @@ public class UserController {
             return Result.errorResourceNotFound("用户不存在");
         }
 
-        if (userLogin.getRole() == User.ROLE_ADMIN || userSelect.getId().equals(userLogin.getId())) {
-            /* 设置前端能看到的用户信息 */
-            userSelect.setPasswordHash(null);
-            userSelect.setSalt(null);
-            userSelect.setIsBlocked(null);
+        /* 设置前端能看到的用户信息 */
+        userSelect.setPasswordHash(null);
+        userSelect.setSalt(null);
+        userSelect.setIsBlocked(null);
 
-            UserInfoVO vo = new UserInfoVO(userSelect,  jwtBlackListService.isUserLogin(userLogin.getId()));
-
-            return Result.success(vo);
+        if (userLogin.getRole() != User.ROLE_ADMIN || !userSelect.getId().equals(userLogin.getId())) {
+            userSelect.setEmail(null);
+            userSelect.setPhone(null);
+            userSelect.setCreateTime(null);
+            userSelect.setRole(null);
         }
 
-        return Result.errorClientOperation("没有权限访问该用户");
+        UserInfoVO vo = new UserInfoVO(userSelect,  jwtBlackListService.isUserLogin(userLogin.getId()));
+
+        return Result.success(vo);
+    }
+
+    @PostMapping("/update")
+    public Result<?> modifyUser(@RequestBody @Valid ModifyUserDTO dto, HttpServletRequest req) {
+        User userLogin = userService.getUserById((Integer) req.getAttribute(JwtUtil.ITEM_ID));
+        if (userLogin == null) {
+            return Result.errorResourceNotFound("用户不存在");
+        }
+
+        User user = new User();
+        user.setId(userLogin.getId());
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setPhone(dto.getPhone());
+        user.setPasswordHash(dto.getPassword());
+        user.setAvatarUrl(dto.getAvatarUrl());
+        user.setUserAbstract(dto.getUserAbstract());
+        user = userService.updateUser(user);
+
+        UserInfoVO vo = new UserInfoVO(user,  jwtBlackListService.isUserLogin(userLogin.getId()));
+        vo.setPasswordHash(null);
+        vo.setIsBlocked(null);
+        return Result.success(vo);
     }
 
     @GetMapping("/logout")
@@ -185,5 +238,24 @@ public class UserController {
         jwtBlackListService.userLogout(userId);
 
         return Result.success();
+    }
+
+    @GetMapping("/abnormal_events")
+    public Result<?> getAbnormalEvents(@Valid GetAbnormalEventDTO dto, HttpServletRequest req) {
+        User userLogin = userService.getUserById((Integer) req.getAttribute(JwtUtil.ITEM_ID));
+        if (userLogin == null ||  userLogin.getRole() != User.ROLE_ADMIN) {
+            return Result.errorClientOperation("仅限管理员操作");
+        }
+
+        List<AbnormalEvent> abnormalEvents = abnormalEventService.getAbnormalEvents(dto);
+        List<AbnormalEventVO> abnormalEventVOs = new ArrayList<AbnormalEventVO>();
+        for (AbnormalEvent abnormalEvent : abnormalEvents) {
+            User user = userService.getUserById(abnormalEvent.getUserId());
+            if (user == null) {continue;}
+            abnormalEventVOs.add(
+                new AbnormalEventVO(user.getId(), user.getUsername(), abnormalEvent.getReason()
+            ));
+        }
+        return Result.success(abnormalEventVOs);
     }
 }

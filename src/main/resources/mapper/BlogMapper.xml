@@ -10,10 +10,11 @@
         <result column="last_modified_time" jdbcType="TIMESTAMP" property="lastModified" />
         <result column="cover_image" jdbcType="VARCHAR" property="coverImageUri" />
         <result column="status" jdbcType="INTEGER" property="status" />
+        <result column="likes" jdbcType="INTEGER" property="likes" />
 
     </resultMap>
     <sql id="All_Blog_Column_List">
-        id, title, content, uid, create_time, last_modified_time, cover_image, status
+        id, title, content, uid, create_time, last_modified_time, cover_image, status, likes
     </sql>
 
     <insert id="createBlog" keyColumn="id" keyProperty="id" parameterType="com.feishu.blog.entity.Blog" useGeneratedKeys="true">
@@ -49,12 +50,47 @@
         WHERE id=#{blogId}
     </select>
 
-    <select id="selectAllBlogPaged" resultMap="BlogResultMap">
+    <select id="selectAllBlogPaged"
+            resultMap="BlogResultMap"
+            parameterType="com.feishu.blog.dto.GetBlogListDTO">
+
         SELECT
-        <include refid="All_Blog_Column_List" />
-        FROM tb_blog
-        LIMIT #{offset}, #{pageSize}
+        <include refid="All_Blog_Column_List"/>
+        FROM tb_blog b         <!-- 给主表起别名 b -->
+
+        <where>
+            <!-- tag 过滤：存在于中间表 -->
+            <if test="tag != null and tag != ''">
+                EXISTS (
+                SELECT 1
+                FROM   tb_blog_tag bt
+                WHERE  bt.bid = b.id
+                AND  bt.tag = #{tag}
+                )
+            </if>
+
+            <!-- userId 过滤：直接比对主表 uid -->
+            <if test="userId != null">
+                AND b.uid = #{userId}
+            </if>
+        </where>
+
+        <!-- 动态 ORDER BY -->
+        <if test="orderBy != null and orderBy != ''">
+            ORDER BY
+            <choose>
+                <when test="orderBy == 'time'"> b.create_time </when>
+                <when test="orderBy == 'likes'"> b.likes      </when>
+            </choose>
+            <if test="sortOrder != null and sortOrder != ''">
+                ${sortOrder}   <!-- 仅 asc/desc，正则已校验 -->
+            </if>
+        </if>
+
+        <!-- 分页：offset = (page-1)*limit -->
+        LIMIT #{page}, #{limit}
     </select>
+
 
     <update id="updateByPrimaryKeySelective" parameterType="com.feishu.blog.entity.Blog">
         update tb_blog
@@ -81,4 +117,12 @@
         delete from tb_blog
         where id = #{blogId,jdbcType=INTEGER}
     </delete>
+
+    <update id="updateBlogStatusByPrimaryKey" parameterType="map">
+        update tb_blog
+        <set>
+            status = #{status,jdbcType=INTEGER},
+        </set>
+        where id = #{blogId,jdbcType=INTEGER}
+    </update>
 </mapper>

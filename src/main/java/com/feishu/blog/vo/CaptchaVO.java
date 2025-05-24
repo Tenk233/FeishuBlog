@@ -48,6 +48,9 @@ public class CaptchaVO {
     @JsonProperty("bl_y")
     private Integer blockY;
 
+    @JsonProperty("bl_x")
+    private Integer blockX;
+
     public CaptchaVO(Captcha captcha) {
         this.id = captcha.getNonceStr();
         this.canvasSrc = captcha.getCanvasSrc();
@@ -57,5 +60,6 @@ public class CaptchaVO {
         this.blockWidth = captcha.getBlockWidth();
         this.blockHeight = captcha.getBlockHeight();
         this.blockY = captcha.getBlockY();
+        this.blockX = captcha.getBlockX();
     }
 }

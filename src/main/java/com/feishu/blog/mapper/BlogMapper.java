@@ -1,5 +1,6 @@
 package com.feishu.blog.mapper;
 
+import com.feishu.blog.dto.GetBlogListDTO;
 import com.feishu.blog.entity.Blog;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -23,10 +24,11 @@ public interface BlogMapper {
 
     Blog selectBlogByPrimaryKey(Integer blogId);
 
-    List<Blog> selectAllBlogPaged(@Param("offset") int offset,
-                                  @Param("pageSize") int pageSize);
+    List<Blog> selectAllBlogPaged(GetBlogListDTO dto);
 
     int updateByPrimaryKeySelective(Blog blog);
 
     int deleteByPrimaryKey(@Param("blogId") Integer blogId);
+
+    int updateBlogStatusByPrimaryKey(@Param("blogId") Integer blogId, @Param("status") Integer status);
 }

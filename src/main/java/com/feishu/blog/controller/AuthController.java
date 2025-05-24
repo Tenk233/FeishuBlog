@@ -2,11 +2,10 @@ package com.feishu.blog.controller;
 
 import com.feishu.blog.dto.UserLoginDTO;
 import com.feishu.blog.dto.UserRegisterDTO;
+import com.feishu.blog.entity.AbnormalEvent;
 import com.feishu.blog.entity.Result;
 import com.feishu.blog.entity.User;
-import com.feishu.blog.service.JwtBlackListService;
-import com.feishu.blog.service.LoginAttemptService;
-import com.feishu.blog.service.UserService;
+import com.feishu.blog.service.*;
 import com.feishu.blog.util.JwtUtil;
 import com.feishu.blog.util.RedisUtil;
 import com.feishu.blog.util.SecUtil;
@@ -17,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +48,12 @@ public class AuthController {
     @Resource
     private RedisUtil redisUtil;
 
+    @Resource
+    private CaptchaService captchaService;
+
+    @Resource
+    private AbnormalEventService abnormalEventService;
+
     @PostMapping("/login")
     public Result<?> login(@RequestBody @Valid UserLoginDTO dto,
                            HttpServletResponse rsp) {
@@ -62,7 +68,14 @@ public class AuthController {
             String msg = "用户名或密码错误";
             log.warn("{} : {}", dto.getUsername(), msg);
             if (loginAttemptService.loginFailed(dto.getUsername())) {
-                // TODO
+
+                User userTry = userService.getUserByUsername(dto.getUsername());
+                if (userTry != null) {
+                    abnormalEventService.addAbnormalEvent(
+                            AbnormalEvent.generateBlogEvent(userTry.getId(), "连续错误登录次数太多")
+                    );
+                }
+
                 return Result.errorToMuchLoginAttempts(null);
             }
             return Result.errorClientOperation(msg);
@@ -89,7 +102,8 @@ public class AuthController {
         // 3. 把 refreshToken 写到 HttpOnly Cookie
         ResponseCookie cookie = ResponseCookie.from(JwtUtil.REFRESH_TOKEN_NAME, refresh)
                 .httpOnly(true)
-                .path("/")
+                .path("/")                  // 整站有效
+                .sameSite("None")           // ★跨域必需
                 .maxAge(Duration.ofDays(7))
                 .build();
         rsp.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
@@ -107,21 +121,12 @@ public class AuthController {
 
     @PostMapping("/register")
     public Result<?> register(@RequestBody @Valid UserRegisterDTO dto) {
-        User user = new User();
-        user.setUsername(dto.getUsername());
-        user.setEmail(dto.getEmail());
-        user.setPhone(dto.getPhone());
-        user.setPasswordHash(dto.getPassword());
+        if (dto.getCaptchaId() == null || dto.getCaptchaCode() == null) {
+            return Result.errorClientOperation("滑块验证码不能为空");
+        }
 
-        userService.register(user);
-
-        return Result.success();
-    }
-
-    @PostMapping("/register_root")
-    public Result<?> registerRoot(@RequestBody @Valid UserRegisterDTO dto) {
-        if (dto.getInviteCode() == null || !SecUtil.checkInviteCode(dto.getInviteCode())) {
-            return Result.errorClientOperation("邀请码不能为空或者邀请码错误！");
+        if (!captchaService.checkImageCode(dto.getCaptchaId(), dto.getCaptchaCode())) {
+            return Result.errorClientOperation("滑块验证失败");
         }
 
         User user = new User();
@@ -129,7 +134,11 @@ public class AuthController {
         user.setEmail(dto.getEmail());
         user.setPhone(dto.getPhone());
         user.setPasswordHash(dto.getPassword());
-        user.setRole(User.ROLE_ADMIN);
+
+        if (dto.getInviteCode() != null && SecUtil.checkInviteCode(dto.getInviteCode())) {
+            /* 有邀请码可以注册为管理员 */
+            user.setRole(User.ROLE_ADMIN);
+        }
 
         userService.register(user);
 

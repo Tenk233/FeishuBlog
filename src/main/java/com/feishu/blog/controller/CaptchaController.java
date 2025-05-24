@@ -27,13 +27,13 @@ public class CaptchaController {
         return Result.success(vo);
     }
 
-    @GetMapping("check/{cid}/{x}")
+    @GetMapping("/check/{username}/{cid}/{x}")
     public Result<?> checkCaptcha(@PathVariable String cid, @PathVariable Integer x,
-                                  HttpServletRequest req) {
+                                  HttpServletRequest req, @PathVariable String username) {
         if (captchaService.checkImageCode(cid, x)) {
             return Result.success();
         }
-        loginAttemptService.loginSucceeded((String) req.getAttribute(JwtUtil.ITEM_NAME));
+        loginAttemptService.loginSucceeded(username);
         return Result.errorClientOperation("滑块验证失败");
     }
 }

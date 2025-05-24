@@ -2,6 +2,7 @@ package com.feishu.blog.controller;
 
 import com.feishu.blog.dto.BlogCreateDTO;
 import com.feishu.blog.dto.BlogModifyDTO;
+import com.feishu.blog.dto.BlogRemoveDTO;
 import com.feishu.blog.dto.GetBlogListDTO;
 import com.feishu.blog.entity.Blog;
 import com.feishu.blog.entity.Result;
@@ -9,6 +10,7 @@ import com.feishu.blog.entity.User;
 import com.feishu.blog.service.BlogService;
 import com.feishu.blog.service.UserService;
 import com.feishu.blog.util.JwtUtil;
+import com.feishu.blog.util.RedisUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -28,8 +30,10 @@ import java.util.Objects;
 public class BlogManageController {
     @Resource
     private BlogService blogService;
-    @Autowired
+    @Resource
     private UserService userService;
+    @Resource
+    private RedisUtil redisUtil;
 
     @PostMapping("/create")
     public Result<?> create(@RequestBody @Valid BlogCreateDTO dto,
@@ -39,7 +43,11 @@ public class BlogManageController {
         blog.setContent(dto.getContent());
         blog.setAuthorId((Integer) req.getAttribute(JwtUtil.ITEM_ID));
         blog.setCoverImageUri(dto.getCoverImageUri());
-        blog.setStatus(dto.getStatus());
+        if (dto.getStatus().equals(0)) {
+            blog.setStatus(0);
+        } else {
+            blog.setStatus(3);
+        }
 
         Blog blogCreated = blogService.createBlog(blog, dto.getTags());
 
@@ -64,7 +72,11 @@ public class BlogManageController {
         blog.setTitle(dto.getTitle());
         blog.setContent(dto.getContent());
         blog.setCoverImageUri(dto.getCoverImageUri());
-        blog.setStatus(dto.getStatus());
+        if (dto.getStatus().equals(0)) {
+            blog.setStatus(0);
+        } else {
+            blog.setStatus(3);
+        }
 
         return Result.success(blogService.updateBlog(blog, dto.getTags()));
     }
@@ -86,6 +98,26 @@ public class BlogManageController {
             return Result.success();
         }
         return Result.errorClientOperation("无法删除该文章");
+    }
+
+
+    /**
+     * 下架某篇文章，将status改为草稿
+     */
+    @PostMapping("/remove")
+    public Result<?> removeBlog(@RequestBody @Valid BlogRemoveDTO dto,
+                                HttpServletRequest req) {
+        User userLogin = userService.getUserById((Integer)req.getAttribute(JwtUtil.ITEM_ID));
+        if (userLogin == null || userLogin.getRole() != User.ROLE_ADMIN) {
+            return Result.errorClientOperation("不允许的操作");
+        }
+
+        Blog blog = blogService.updateBlogStatus(dto.getBid(), Blog.STATUS_FORBIDDEN);
+        dto.setBid(userLogin.getId());
+        // Redis存储下架原因
+        redisUtil.set("remove:blog:" + dto.getBid(), dto);
+
+        return Result.success(blog);
     }
 
 }

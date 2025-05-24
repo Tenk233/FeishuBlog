@@ -6,6 +6,8 @@ import com.feishu.blog.interceptor.RefreshTokenInterceptor;
 import com.feishu.blog.util.FileUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -48,5 +50,17 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addResourceHandler(FileUtil.IMAGE_URI_PREFIX + "/**")
                 .addResourceLocations("file:" + FileUtil.IMAGE_SAVE_DIR)   // 必须加 file:
                 .setCachePeriod(3600);                     // 浏览器缓存 1h，可选
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOriginPatterns("*")   // ★ 任意协议 + 任意主机 + 任意端口
+                .allowedMethods("GET","POST","PUT","DELETE")
+                .allowedHeaders("*")
+                .allowCredentials(true)                           // ★必须
+                .exposedHeaders(HttpHeaders.AUTHORIZATION)
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 }

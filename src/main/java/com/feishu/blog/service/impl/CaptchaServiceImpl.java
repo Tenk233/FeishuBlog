@@ -131,6 +131,7 @@ public class CaptchaServiceImpl implements CaptchaService {
             //设置返回参数
             captcha.setNonceStr(nonceStr);
             captcha.setBlockY(blockY);
+            captcha.setBlockX(blockX);
             captcha.setBlockSrc(CaptchaUtil.toBase64(blockImage, "png"));
             captcha.setCanvasSrc(CaptchaUtil.toBase64(canvasImage, "png"));
             return captcha;

@@ -1,5 +1,6 @@
 package com.feishu.blog.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.feishu.blog.entity.User;
 import lombok.Data;
@@ -47,8 +48,14 @@ public class UserInfoVO {
 
     private String email;
 
-    @JsonProperty("create_time")
+    @JsonIgnore
     private Date createTime;
+
+    /** 前端真正接收的更新时间（秒） */
+    @JsonProperty("create_time")
+    public long getCreateTimeEpoch() {
+        return createTime == null ? 0L : createTime.getTime();
+    }
 
     @JsonProperty("avatar_url")
     private String avatarUrl;

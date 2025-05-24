@@ -47,7 +47,6 @@ public class BlogController {
 
     @GetMapping("/list")
     public Result<?> listBlogPaged(@Valid GetBlogListDTO query) {
-        // TODO 根据查询条件过滤结果
         List<Blog> blogs = blogService.getAllBlogsPaged(query);
         List<BlogInfoVO> vos = new ArrayList<>();
         for (Blog blog : blogs) {
@@ -55,5 +54,10 @@ public class BlogController {
             vos.add(new BlogInfoVO(blog, user.getUsername(), blogService.getBlogTagsByBlogId(blog.getId())));
         }
         return Result.success(vos);
+    }
+
+    @GetMapping("/tags")
+    public Result<?> listAllTags() {
+        return Result.success(blogService.getAllTags());
     }
 }

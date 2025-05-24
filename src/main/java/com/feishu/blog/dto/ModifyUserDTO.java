@@ -13,13 +13,17 @@ import lombok.NonNull;
  */
 @Data
 public class ModifyUserDTO {
-    @NotNull
     private Integer id;
+
+    private String username;
 
     private String phone;
     private String email;
 
     private String password;
+
+    @JsonProperty("avatar_url")
+    private String avatarUrl;
 
     @JsonProperty("is_block")
     private Boolean isBlock;

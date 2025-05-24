@@ -42,4 +42,12 @@ public interface BlogService {
      * @param blogId
      */
     void deleteBlogByBlogId(Integer blogId);
+
+    /**
+     * 更新博客状态，可用于下架、上架操作
+     * @param blogId
+     */
+    Blog updateBlogStatus(Integer blogId, Integer status);
+
+    List<String> getAllTags();
 }

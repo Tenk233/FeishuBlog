@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.feishu.blog.mapper.EventMapper">
+    <resultMap id="EventResultMap" type="com.feishu.blog.entity.AbnormalEvent">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="type" jdbcType="INTEGER" property="type" />
+        <result column="uid" jdbcType="INTEGER" property="userId" />
+        <result column="bid" jdbcType="INTEGER" property="blogId" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="reason" jdbcType="VARCHAR" property="reason" />
+    </resultMap>
+    <sql id="All_Event_Column_List">
+        id, type, uid, bid, create_time, reason
+    </sql>
+
+    <insert id="insertAbnormalEvent" keyColumn="id" keyProperty="id" parameterType="com.feishu.blog.entity.Blog" useGeneratedKeys="true">
+        insert into tb_abnormal_event
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            `type`,
+            uid,
+            <if test="blogId != null">
+                bid,
+            </if>
+            <if test="reason != null">
+                reason
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{type,jdbcType=INTEGER},
+            #{userId,jdbcType=INTEGER},
+            <if test="blogId != null">
+                #{blogId,jdbcType=INTEGER},
+            </if>
+            <if test="reason != null">
+                #{reason,jdbcType=VARCHAR}
+            </if>
+        </trim>
+    </insert>
+    <select id="selectAbnormalEvent"
+            resultMap="EventResultMap"
+            parameterType="com.feishu.blog.dto.GetAbnormalEventDTO">
+
+        SELECT
+        <include refid="All_Event_Column_List"/>
+        FROM tb_abnormal_event tb         <!-- 给主表起别名 tb -->
+
+        <where>
+            <!-- 事件类型 -->
+            <if test="type != null">
+                tb.type = #{type}
+            </if>
+
+            <!-- 用户 ID -->
+            <if test="userId != null">
+                AND tb.uid = #{userId}
+            </if>
+
+            <!-- 博客 ID -->
+            <if test="blogId != null">
+                AND tb.bid = #{blogId}
+            </if>
+
+            <!-- 起始时间 -->
+            <if test="after != null">
+                AND tb.create_time &gt; #{after,jdbcType=TIMESTAMP}
+            </if>
+        </where>
+
+        <!-- 分页：offset = (page-1)*limit -->
+        LIMIT #{page}, #{limit}
+    </select>
+
+</mapper>

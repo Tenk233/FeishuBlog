@@ -42,7 +42,14 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User updateUser(User user) {
+        /* 如果外部传入了密码，则要更新密码和盐值 */
+        if (user.getPasswordHash() != null) {
+            /* 生成盐值和密码哈希 */
+            user.setSalt(SecUtil.generateSalt());
+            user.setPasswordHash(SecUtil.hashPassword(user.getPasswordHash(), user.getSalt()));
+        }
         userMapper.updateByPrimaryKeySelective(user);
+        /* 更新后返回最新的用户信息 */
         return userMapper.selectByPrimaryKey(user.getId());
     }
 

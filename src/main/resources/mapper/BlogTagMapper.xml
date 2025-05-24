@@ -46,4 +46,10 @@
         delete from tb_blog_tag
         where bid = #{blogId,jdbcType=INTEGER}
     </delete>
+
+    <select id="selectAllTags">
+        SELECT
+        distinct(tag)
+        FROM tb_blog_tag
+    </select>
 </mapper>

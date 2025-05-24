@@ -49,4 +49,6 @@ public interface BlogTagMapper {
      * @return
      */
     int deleteByBlogId(@Param("blogId") Integer blogId);
+
+    List<String> selectAllTags();
 }

@@ -14,7 +14,8 @@ import java.util.Date;
 public class Blog {
     public static final int STATUS_DRAFT = 0;
     public static final int STATUS_FORBIDDEN = 1;
-    public static final int STATUS_PUBLISHED = 2;
+    public static final int STATUS_UNDER_VIEW = 2;
+    public static final int STATUS_PUBLISHED = 3;
 
     private Integer id;
     private String title;
@@ -24,4 +25,5 @@ public class Blog {
     private Date lastModified;
     private String coverImageUri;
     private Integer status;
+    private Integer likes;
 }
