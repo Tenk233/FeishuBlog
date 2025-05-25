@@ -55,7 +55,7 @@ public class AuthController {
     private AbnormalEventService abnormalEventService;
 
     @PostMapping("/login")
-    public Result<?> login(@RequestBody @Valid UserLoginDTO dto,
+    public Result<?> login(@RequestBody UserLoginDTO dto,
                            HttpServletResponse rsp) {
         if (loginAttemptService.isBlocked(dto.getUsername()) && dto.getCode() == null) {
             return Result.errorToMuchLoginAttempts(null);
