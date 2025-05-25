@@ -114,25 +114,25 @@ public class UserController {
     @GetMapping("/info/{userId}")
     public Result<?> getUserInfo(@PathVariable Integer userId, HttpServletRequest req)
     {
-        User userLogin = userService.getUserById((Integer) req.getAttribute(JwtUtil.ITEM_ID));
+//        User userLogin = userService.getUserById((Integer) req.getAttribute(JwtUtil.ITEM_ID));
         User userSelect = userService.getUserById(userId);
-        if (userLogin == null || userSelect == null) {
-            return Result.errorResourceNotFound("用户不存在");
-        }
+//        if (userLogin == null || userSelect == null) {
+//            return Result.errorResourceNotFound("用户不存在");
+//        }
 
         /* 设置前端能看到的用户信息 */
         userSelect.setPasswordHash(null);
         userSelect.setSalt(null);
         userSelect.setIsBlocked(null);
 
-        if (userLogin.getRole() != User.ROLE_ADMIN || !userSelect.getId().equals(userLogin.getId())) {
-            userSelect.setEmail(null);
-            userSelect.setPhone(null);
-            userSelect.setCreateTime(null);
-            userSelect.setRole(null);
-        }
+//        if (userLogin.getRole() != User.ROLE_ADMIN || !userSelect.getId().equals(userLogin.getId())) {
+//            userSelect.setEmail(null);
+//            userSelect.setPhone(null);
+//            userSelect.setCreateTime(null);
+//            userSelect.setRole(null);
+//        }
 
-        UserInfoVO vo = new UserInfoVO(userSelect,  jwtBlackListService.isUserLogin(userLogin.getId()));
+        UserInfoVO vo = new UserInfoVO(userSelect,  jwtBlackListService.isUserLogin(userSelect.getId()));
 
         return Result.success(vo);
     }

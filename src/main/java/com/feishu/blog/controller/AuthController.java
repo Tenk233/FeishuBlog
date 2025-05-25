@@ -103,7 +103,7 @@ public class AuthController {
         ResponseCookie cookie = ResponseCookie.from(JwtUtil.REFRESH_TOKEN_NAME, refresh)
                 .httpOnly(true)
                 .path("/")                  // 整站有效
-                .sameSite("None")           // ★跨域必需
+                .sameSite("Lax")           // ★跨域必需
                 .maxAge(Duration.ofDays(7))
                 .build();
         rsp.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());

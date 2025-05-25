@@ -15,5 +15,5 @@ public class FileUtil {
     /* 保存目录（也可以放到配置文件注入） */
     public static final String IMAGE_SAVE_DIR = "z:/uploads/img";
 
-    public static final String IMAGE_URI_PREFIX = "/files/img";
+    public static final String IMAGE_URI_PREFIX = "/api/img";
 }
