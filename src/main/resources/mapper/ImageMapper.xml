@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.feishu.blog.mapper.ImageMapper">
+    <resultMap id="ImageResultMap" type="com.feishu.blog.entity.UploadedImage">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="type" />
+        <result column="uid" jdbcType="INTEGER" property="userId" />
+        <result column="status" jdbcType="INTEGER" property="status" />
+        <result column="upload_time" jdbcType="TIMESTAMP" property="uploadTime" />
+    </resultMap>
+    <sql id="All_Image_Column_List">
+        id, name, uid, status, create_time
+    </sql>
+
+    <insert id="insertImage" keyColumn="id" keyProperty="id" parameterType="com.feishu.blog.entity.UploadedImage" useGeneratedKeys="true">
+        insert into tb_image
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            `name`,
+            uid,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{name,jdbcType=VARCHAR},
+            #{userId,jdbcType=INTEGER},
+        </trim>
+    </insert>
+    <select id="selectImageByName"
+            resultMap="ImageResultMap"
+            parameterType="java.lang.String">
+
+        SELECT
+        <include refid="All_Image_Column_List"/>
+        FROM tb_image tb         <!-- 给主表起别名 tb -->
+
+        <where>
+                tb.name = #{name}
+        </where>
+    </select>
+    <update id="updateImageStatusByName" parameterType="map">
+        UPDATE tb_image
+        set status = #{status}
+        WHERE name = ${name}
+    </update>
+</mapper>

@@ -2,9 +2,12 @@ package com.feishu.blog.service.impl;
 
 
 import com.feishu.blog.entity.Result;
+import com.feishu.blog.entity.UploadedImage;
 import com.feishu.blog.exception.BizException;
+import com.feishu.blog.mapper.ImageMapper;
 import com.feishu.blog.service.ImageService;
 import com.feishu.blog.util.FileUtil;
+import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -23,6 +26,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
 
+    @Resource
+    private ImageMapper imageMapper;
+
     @Override
     public String uploadImage(MultipartFile file, Integer userId) {
         /* ---------- 类型校验 ---------- */
@@ -36,6 +42,10 @@ public class ImageServiceImpl implements ImageService {
             Files.createDirectories(dir);
             Path dest = dir.resolve(newName);
             file.transferTo(dest);
+
+            // 插入数据库以备使用
+            imageMapper.insertImage(UploadedImage.generateImage(newName, userId));
+
         } catch (IOException e) {
             log.warn("文件上传错误: {}", e.getMessage());
             throw new BizException(BizException.INTERNAL_ERROR, "文件上传错误");
