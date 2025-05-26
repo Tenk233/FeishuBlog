@@ -2,12 +2,15 @@ package com.feishu.blog.exception;
 
 import com.feishu.blog.entity.Result;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -62,6 +65,16 @@ public class GlobalExceptionHandler {
     public Result<?> handleFormValidation(BindException ex) {
         // 在 Spring 6.x 里 BindException 自身就是 BindingResult
         return buildValidationResult((BindingResult) ex);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public Result<?> handleFormTransform(MethodArgumentTypeMismatchException ex) {
+        return Result.errorClientOperation(ex.getMessage());
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public Result<?> handleErrorReqMethod(HttpRequestMethodNotSupportedException ex) {
+        return Result.errorClientOperation(ex.getMessage());
     }
 
     /* ---------- ③ 单个参数 / 路径变量 / 方法级校验失败 ---------- */
