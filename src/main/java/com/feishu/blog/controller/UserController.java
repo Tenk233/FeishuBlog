@@ -1,17 +1,17 @@
 package com.feishu.blog.controller;
 
-import com.feishu.blog.dto.GetAbnormalEventDTO;
-import com.feishu.blog.dto.GetUserListDTO;
-import com.feishu.blog.dto.ModifyUserDTO;
-import com.feishu.blog.dto.UserRegisterDTO;
+import com.feishu.blog.dto.*;
 import com.feishu.blog.entity.AbnormalEvent;
+import com.feishu.blog.entity.Blog;
 import com.feishu.blog.entity.Result;
 import com.feishu.blog.entity.User;
 import com.feishu.blog.service.AbnormalEventService;
+import com.feishu.blog.service.BlogService;
 import com.feishu.blog.service.JwtBlackListService;
 import com.feishu.blog.service.UserService;
 import com.feishu.blog.util.JwtUtil;
 import com.feishu.blog.vo.AbnormalEventVO;
+import com.feishu.blog.vo.BlogInfoVO;
 import com.feishu.blog.vo.UserInfoVO;
 import io.jsonwebtoken.Jwt;
 import jakarta.annotation.Nonnull;
@@ -43,6 +43,8 @@ public class UserController {
     private JwtBlackListService  jwtBlackListService;
     @Autowired
     private AbnormalEventService abnormalEventService;
+    @Resource
+    private BlogService blogService;
 
     @PostMapping("/root_register")
     public Result<?> rootRegister(@RequestBody @Valid UserRegisterDTO dto,
@@ -257,5 +259,17 @@ public class UserController {
             ));
         }
         return Result.success(abnormalEventVOs);
+    }
+
+    @GetMapping("/list_blog")
+    public Result<?> listMyBlogPaged(@Valid GetBlogListDTO query, HttpServletRequest req) {
+        query.setUserId((Integer) req.getAttribute(JwtUtil.ITEM_ID));
+        List<Blog> blogs = blogService.getAllBlogsPaged(query);
+        List<BlogInfoVO> vos = new ArrayList<>();
+        for (Blog blog : blogs) {
+            User user = userService.getUserById(blog.getAuthorId());
+            vos.add(new BlogInfoVO(blog, user.getUsername(), blogService.getBlogTagsByBlogId(blog.getId())));
+        }
+        return Result.success(vos);
     }
 }

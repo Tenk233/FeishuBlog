@@ -50,6 +50,9 @@ public class BlogController {
         List<Blog> blogs = blogService.getAllBlogsPaged(query);
         List<BlogInfoVO> vos = new ArrayList<>();
         for (Blog blog : blogs) {
+            if (blog.getStatus() != Blog.STATUS_PUBLISHED) {
+                continue;
+            }
             User user = userService.getUserById(blog.getAuthorId());
             vos.add(new BlogInfoVO(blog, user.getUsername(), blogService.getBlogTagsByBlogId(blog.getId())));
         }
