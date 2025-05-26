@@ -6,13 +6,13 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class ImageClassificationDTO {
+public class ClassificationDTO {
 
     private int code;
     private String msg;
     private Data data;
 
-    public ImageClassificationDTO(int code, String msg, Data data) {
+    public ClassificationDTO(int code, String msg, Data data) {
         this.code = code;
         this.msg = msg;
         this.data = data;

@@ -1,8 +1,7 @@
 package com.feishu.blog.service;
 
-import com.feishu.blog.dto.ImageClassificationDTO;
+import com.feishu.blog.dto.ClassificationDTO;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
@@ -203,7 +202,7 @@ public class LocalImageService {
         model = ModelZoo.loadModel(criteria);
     }
 
-    public ImageClassificationDTO classifyImage(MultipartFile file) throws Exception {
+    public ClassificationDTO classifyImage(MultipartFile file) throws Exception {
         // 获取原始图像
         byte[] imageData = file.getBytes();
         Image img = preprocessImage(imageData);
@@ -232,12 +231,12 @@ public class LocalImageService {
             boolean isValid = !bestCategory.equals("cat") && !bestCategory.equals("dog");
 
             // 返回响应体
-            ImageClassificationDTO.Data data = new ImageClassificationDTO.Data(isValid, bestCategory);
-            return new ImageClassificationDTO(0, msgBuilder.toString(), data);
+            ClassificationDTO.Data data = new ClassificationDTO.Data(isValid, bestCategory);
+            return new ClassificationDTO(0, msgBuilder.toString(), data);
         }
     }
 
-    public ImageClassificationDTO classifyImageWithPath(String path) throws Exception {
+    public ClassificationDTO classifyImageWithPath(String path) throws Exception {
         MultipartFile file = fileToMultipartFile(path);
         return classifyImage(file);
     }

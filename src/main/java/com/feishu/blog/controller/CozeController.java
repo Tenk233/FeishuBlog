@@ -1,6 +1,6 @@
 package com.feishu.blog.controller;
 
-import com.feishu.blog.dto.ImageClassificationDTO;
+import com.feishu.blog.dto.ClassificationDTO;
 import jakarta.annotation.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,8 +20,8 @@ public class CozeController {
     private CozeImageService cozeService;
 
     @PostMapping("/imageCompliance")
-    public ResponseEntity<ImageClassificationDTO> imageCompliance(@RequestParam("file") MultipartFile file) throws IOException {
-        ImageClassificationDTO response = cozeService.processImageCompliance(file);
+    public ResponseEntity<ClassificationDTO> imageCompliance(@RequestParam("file") MultipartFile file) throws IOException {
+        ClassificationDTO response = cozeService.processImageCompliance(file);
         return ResponseEntity.ok(response);
     }
 }
