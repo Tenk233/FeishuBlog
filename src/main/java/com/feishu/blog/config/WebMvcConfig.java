@@ -39,7 +39,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/api/user/check_email/**",
                         "/api/user/check_username/**",
                         "/api/captcha/**",
-                        "api/user/info/**"
+                        "/api/user/info/**"
                 ); // 白名单 (可选); 按需排除静态资源等
         registry.addInterceptor(refreshTokenInterceptor)
                 .addPathPatterns("/api/auth/fresh");
