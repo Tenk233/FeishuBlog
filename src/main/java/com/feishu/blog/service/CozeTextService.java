@@ -3,12 +3,10 @@ package com.feishu.blog.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feishu.blog.dto.ClassificationDTO;
+import com.feishu.blog.dto.CozeWorkflowResponseDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -29,25 +27,18 @@ public class CozeTextService {
     @Value("${coze.api.txt-workflow-url}")
     private String workflowUrl;
 
-//    private final CozeProperties cozeProperties;
 
     List<String> validCategories = List.of("积极", "中性", "惊奇");
     List<String> invalidCategories = List.of("愤怒","悲伤","恐惧","惊奇","中性");
 
-//    @Autowired
-//    public CozeSentimentService(CozeProperties cozeProperties) {
-//        this.cozeProperties = cozeProperties;
-//    }
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public boolean isValidCategory(String category) {
+    private boolean isValidCategory(String category) {
         return validCategories.contains(category);
     }
 
-
-    public ClassificationDTO analyzeSentiment(String inputText) {
-        RestTemplate restTemplate = new RestTemplate();
-        ObjectMapper objectMapper = new ObjectMapper();
-
+    private String callWorkflow(String inputText) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("input", inputText);
 
@@ -61,46 +52,33 @@ public class CozeTextService {
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
-        // TODO: Should use CozeWorkflowResponseDTO
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                workflowUrl, entity, String.class
-        );
+        ResponseEntity<CozeWorkflowResponseDTO> response = restTemplate.postForEntity(
+                workflowUrl, entity, CozeWorkflowResponseDTO.class);
 
-        ClassificationDTO result = new ClassificationDTO();
-        ClassificationDTO.Data data = new ClassificationDTO.Data();
-
-        try {
-            Map<String, Object> responseBodyMap = objectMapper.readValue(response.getBody(), new TypeReference<>() {});
-
-            int code = (int) responseBodyMap.get("code");
-
-            result.setCode(code);
-            result.setMsg("Fail:" + responseBodyMap.get("msg"));
-
-            if (code != 0) {
-                data.setValid(false);
-                data.setCategory("未知");
-                result.setData(data);
-                return result;
-            }
-
-            String dataString = (String) responseBodyMap.get("data");
-            Map<String, Object> responseDataMap = objectMapper.readValue(dataString, new TypeReference<>() {});
-            String category = (String) responseDataMap.get("output");
-
-            data.setValid(isValidCategory(category));
-            data.setCategory(category);
-            result.setData(data);
-
-        } catch (Exception e) {
-            result.setCode(1);
-            result.setMsg("Fail:"+ e.getMessage());
-
-            data.setValid(false);
-            data.setCategory("未知");
-            result.setData(data);
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null && response.getBody().getCode() == 0) {
+            return response.getBody().getData();
+        } else {
+            throw new RuntimeException("工作流调用失败: " + (response.getBody() != null ? response.getBody().getMsg() : "未知错误"));
         }
+    }
 
-        return result;
+    private ClassificationDTO parseWorkflowData(String workflowData) {
+        ClassificationDTO response = new ClassificationDTO();
+        try {
+            Map<String, String> responseDataMap = objectMapper.readValue(workflowData, new TypeReference<>() {});
+            String category = responseDataMap.get("output");
+            response.setMsg("Success");
+            response.setData(new ClassificationDTO.Data(isValidCategory(category),category));
+        } catch (Exception e) {
+            response.setCode(1);
+            response.setMsg(e.getMessage());
+            response.setData(new ClassificationDTO.Data(false,"未知"));
+        }
+        return response;
+    }
+
+    public ClassificationDTO processContentCompliance(String inputText) {
+        String workflowData = callWorkflow(inputText);
+        return parseWorkflowData(workflowData);
     }
 }
