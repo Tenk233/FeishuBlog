@@ -1,5 +1,6 @@
 package com.feishu.blog.util;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 
 import java.util.Set;

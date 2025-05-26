@@ -5,6 +5,7 @@ import com.feishu.blog.interceptor.AccessTokenInterceptor;
 import com.feishu.blog.interceptor.RefreshTokenInterceptor;
 import com.feishu.blog.util.FileUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -25,6 +26,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private final AccessTokenInterceptor accessTokenInterceptor;
     private final AccessLogInterceptor accessLogInterceptor;
     private final RefreshTokenInterceptor refreshTokenInterceptor;
+
+    @Value("${image.save-dir}")
+    private String imageSaveDir;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -49,7 +53,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) { // ← 注意这里
         // 访问路径：/files/img/xxx.jpg → 映射到磁盘 IMAGE_SAVE_DIR
         registry.addResourceHandler(FileUtil.IMAGE_URI_PREFIX + "/**")
-                .addResourceLocations("file:" + FileUtil.IMAGE_SAVE_DIR)   // 必须加 file:
+                .addResourceLocations("file:" + imageSaveDir)   // 必须加 file:
                 .setCachePeriod(3600);                     // 浏览器缓存 1h，可选
     }
 

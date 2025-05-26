@@ -13,6 +13,7 @@ import com.feishu.blog.util.ImgUrlExtractorUtil;
 import com.feishu.blog.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,9 @@ public class ContentServiceImpl implements ContentService {
     private final BlogMapper blogMapper;
     private final EventMapper eventMapper;
     private final ImageMapper imageMapper;
+
+    @Value("${image.save-dir}")
+    private String imageSaveDir;
 
     /**
      * 异步执行：内容和图片合规校验 + 更新数据库
@@ -80,7 +84,7 @@ public class ContentServiceImpl implements ContentService {
 
                 if (getImageCheckLevel() == LEVEL_LOCAL_CHECK || getImageCheckLevel() == LEVEL_BOTH_CHECK) {
                     try {
-                        ClassificationDTO classificationDTO = localImageService.classifyImageWithPath(FileUtil.IMAGE_SAVE_DIR + "/" + name);
+                        ClassificationDTO classificationDTO = localImageService.classifyImageWithPath(imageSaveDir + "/" + name);
                         contentValid = classificationDTO != null && classificationDTO.getData().isValid();
                         if (!contentValid) {
                             msg = "本地模型审查结果，消极的图片: " + FileUtil.IMAGE_URI_PREFIX + "/" + name;
@@ -93,7 +97,7 @@ public class ContentServiceImpl implements ContentService {
 
                 if (getImageCheckLevel() == LEVEL_COZE_CHECK || getImageCheckLevel() == LEVEL_BOTH_CHECK) {
                     try {
-                        ClassificationDTO classificationDTO = cozeImageService.processImageComplianceWithPath(FileUtil.IMAGE_SAVE_DIR + "/" + name);
+                        ClassificationDTO classificationDTO = cozeImageService.processImageComplianceWithPath(imageSaveDir + "/" + name);
                         contentValid = classificationDTO != null && classificationDTO.getData().isValid();
                         if (!contentValid) {
                             msg = "COZE审查结果，消极的图片: " + FileUtil.IMAGE_URI_PREFIX + "/" + name;

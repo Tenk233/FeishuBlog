@@ -10,6 +10,7 @@ import com.feishu.blog.util.FileUtil;
 import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,6 +30,9 @@ public class ImageServiceImpl implements ImageService {
     @Resource
     private ImageMapper imageMapper;
 
+    @Value("${image.save-dir}")
+    private String imageSaveDir;
+
     @Override
     public String uploadImage(MultipartFile file, Integer userId) {
         /* ---------- 类型校验 ---------- */
@@ -37,7 +41,7 @@ public class ImageServiceImpl implements ImageService {
         String newName = UUID.randomUUID() + "." + ext;
 
         try {
-            Path dir = Paths.get(FileUtil.IMAGE_SAVE_DIR);
+            Path dir = Paths.get(imageSaveDir);
             /* ---------- 保存 ---------- */
             Files.createDirectories(dir);
             Path dest = dir.resolve(newName);
