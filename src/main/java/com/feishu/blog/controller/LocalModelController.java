@@ -1,6 +1,6 @@
 package com.feishu.blog.controller;
 
-import com.feishu.blog.dto.ImageClassificationDTO;
+import com.feishu.blog.dto.ClassificationDTO;
 import com.feishu.blog.service.LocalImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +17,9 @@ public class LocalModelController {
     private LocalImageService service;
 
     @PostMapping("/imageCompliance")
-    public ResponseEntity<ImageClassificationDTO> classifyImage(@RequestParam("file") MultipartFile file) throws Exception {
+    public ResponseEntity<ClassificationDTO> classifyImage(@RequestParam("file") MultipartFile file) throws Exception {
 //        byte[] imageData = file.getBytes();
-        ImageClassificationDTO response = service.classifyImage(file);
+        ClassificationDTO response = service.classifyImage(file);
         return ResponseEntity.ok(response);
     }
 }

@@ -3,7 +3,7 @@ package com.feishu.blog.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.feishu.blog.dto.CozeUploadImageReponse;
 import com.feishu.blog.dto.CozeWorkflowResponseDTO;
-import com.feishu.blog.dto.ImageClassificationDTO;
+import com.feishu.blog.dto.ClassificationDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
@@ -13,10 +13,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.mock.web.MockMultipartFile;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,28 +26,28 @@ import static com.feishu.blog.service.LocalImageService.fileToMultipartFile;
 @Slf4j
 public class CozeImageService {
 
-    @Value("${coze.api.access-token}")
+    @Value("${coze.api.img-access-token}")
     private String accessToken;
 
-    @Value("${coze.api.workflow_id}")
+    @Value("${coze.api.img-workflow-id}")
     private String workflowId;
 
-    @Value("${coze.api.upload-url}")
+    @Value("${coze.api.img-upload-url}")
     private String uploadUrl;
 
-    @Value("${coze.api.workflow-url}")
+    @Value("${coze.api.img-workflow-url}")
     private String workflowUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    public ImageClassificationDTO processImageComplianceWithPath(String path) throws IOException {
+    public ClassificationDTO processImageComplianceWithPath(String path) throws IOException {
         MultipartFile file = fileToMultipartFile(path);
         return processImageCompliance(file);
     }
 
-    public ImageClassificationDTO processImageCompliance(MultipartFile file) throws IOException {
+    public ClassificationDTO processImageCompliance(MultipartFile file) throws IOException {
         // Step 1: 上传图片并获取 imageId
         String imageId = uploadImage(file);
 
@@ -112,7 +109,7 @@ public class CozeImageService {
         }
     }
 
-    private ImageClassificationDTO parseWorkflowData(String workflowData) throws IOException {
-        return objectMapper.readValue(workflowData, ImageClassificationDTO.class);
+    private ClassificationDTO parseWorkflowData(String workflowData) throws IOException {
+        return objectMapper.readValue(workflowData, ClassificationDTO.class);
     }
 }
