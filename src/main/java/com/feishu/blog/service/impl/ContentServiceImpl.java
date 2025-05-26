@@ -54,14 +54,14 @@ public class ContentServiceImpl implements ContentService {
         log.debug("开始异步审查用户{}的博客{}", userId, blogId);
         // 检查文本内容
         if (getContentCheckLevel() == LEVEL_LOCAL_CHECK || getContentCheckLevel() == LEVEL_BOTH_CHECK) {
-            ClassificationDTO classificationDTO = localTextService.analyzeSentiment(content);
+            ClassificationDTO classificationDTO = localTextService.processContentCompliance(content);
             contentValid = classificationDTO != null && classificationDTO.getData().isValid();
             if (!contentValid) {
                 msg = "本地模型审查结果，消极的博客内容: " + content;
             }
         }
         if (contentValid && getContentCheckLevel() == LEVEL_COZE_CHECK || getContentCheckLevel() == LEVEL_BOTH_CHECK) {
-            ClassificationDTO classificationDTO = cozeTextService.analyzeSentiment(content);
+            ClassificationDTO classificationDTO = cozeTextService.processContentCompliance(content);
             contentValid = classificationDTO != null && classificationDTO.getData().isValid();
             if (!contentValid) {
                 msg = "COZE审查结果，消极的博客内容: " + content;
