@@ -10,13 +10,9 @@ import ai.djl.ndarray.*;
 import ai.djl.ndarray.types.DataType;
 import ai.djl.repository.zoo.*;
 import ai.djl.ndarray.types.Shape;
-import ai.djl.util.PairList;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Service;
-import ai.djl.util.Pair;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,8 +20,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 
-@Service
 @Slf4j
+@Service
 public class LocalTextService {
     private ZooModel<NDList, NDList> model;
     private Predictor<NDList, NDList> predictor;
@@ -35,6 +31,10 @@ public class LocalTextService {
             1, "消极",
             2, "中性"
     );
+    List<String> validCategories = List.of("积极", "中性");
+    private boolean isValidCategory(String category) {
+        return validCategories.contains(category);
+    }
 
     @PostConstruct
     public void init() throws ModelException, IOException {
@@ -53,11 +53,11 @@ public class LocalTextService {
                 .optEngine("OnnxRuntime") // 指定 ONNX 引擎
                 .build();
 
-        ZooModel<NDList, NDList> model = ModelZoo.loadModel(criteria);
+        model = ModelZoo.loadModel(criteria);
         predictor = model.newPredictor();
     }
 
-    public String classify(String text) throws Exception {
+    private String classify(String text) throws Exception {
         try (NDManager manager = NDManager.newBaseManager()) {
             Encoding encoding = tokenizer.encode(text);
             long[] inputIdsArr = encoding.getIds();
@@ -81,24 +81,18 @@ public class LocalTextService {
         }
     }
 
-    public ClassificationDTO analyzeSentiment(String inputText) {
+    public ClassificationDTO processContentCompliance(String inputText) {
         ClassificationDTO response = new ClassificationDTO();
-        ClassificationDTO.Data data = new ClassificationDTO.Data();
 
         try {
             String category = classify(inputText);
-            data.setValid(!category.equals("消极"));
-            data.setCategory(category);
+            response.setData(new ClassificationDTO.Data(isValidCategory(category),category));
             response.setCode(0);
             response.setMsg("Success");
-            response.setData(data);
         } catch (Exception e) {
-            data.setValid(false);
-            data.setCategory("未知");
-
             response.setCode(1);
-            response.setMsg("Fail:" + e.getMessage());
-            response.setData(data);
+            response.setData(new ClassificationDTO.Data(false,"未知"));
+            response.setMsg(e.getMessage());
         }
 
         return response;

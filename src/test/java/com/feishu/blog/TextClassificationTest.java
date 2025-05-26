@@ -17,16 +17,16 @@ public class TextClassificationTest {
     private CozeTextService cozeTextService;
 
     @Test
-    public void testLocal() throws Exception {
+    public void testLocal() {
         String content = "你好,我是你爹";
-        ClassificationDTO response = localTextService.analyzeSentiment(content);
+        ClassificationDTO response = localTextService.processContentCompliance(content);
         log.debug("{}", response);
     }
 
     @Test
-    public void testCoze() throws Exception {
+    public void testCoze()  {
         String content = "你好，我是你爹";
-        ClassificationDTO response = cozeTextService.analyzeSentiment(content);
+        ClassificationDTO response = cozeTextService.processContentCompliance(content);
         log.debug("{}", response);
     }
 }
