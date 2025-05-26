@@ -8,12 +8,15 @@ import com.feishu.blog.entity.Blog;
 import com.feishu.blog.entity.Result;
 import com.feishu.blog.entity.User;
 import com.feishu.blog.service.BlogService;
+import com.feishu.blog.service.ContentService;
 import com.feishu.blog.service.UserService;
 import com.feishu.blog.util.JwtUtil;
 import com.feishu.blog.util.RedisUtil;
+import com.feishu.blog.vo.BlogInfoVO;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +28,7 @@ import java.util.Objects;
  * @author Tenk
  * @date 2025/5/21
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/blog_m")
 public class BlogManageController {
@@ -34,6 +38,8 @@ public class BlogManageController {
     private UserService userService;
     @Resource
     private RedisUtil redisUtil;
+    @Resource
+    private ContentService contentService;
 
     @PostMapping("/create")
     public Result<?> create(@RequestBody @Valid BlogCreateDTO dto,
@@ -46,11 +52,13 @@ public class BlogManageController {
         if (dto.getStatus().equals(0)) {
             blog.setStatus(0);
         } else {
-            blog.setStatus(3);
+            blog.setStatus(Blog.STATUS_UNDER_VIEW);
         }
 
         Blog blogCreated = blogService.createBlog(blog, dto.getTags());
-
+        if (blog.getStatus() != 0) {
+            contentService.checkContent(blog.getContent(), blog.getId(), blog.getAuthorId());
+        }
         return Result.success(blogCreated);
     }
 
@@ -75,10 +83,14 @@ public class BlogManageController {
         if (dto.getStatus().equals(0)) {
             blog.setStatus(0);
         } else {
-            blog.setStatus(3);
+            blog.setStatus(2);
         }
-
-        return Result.success(blogService.updateBlog(blog, dto.getTags()));
+        blog = blogService.updateBlog(blog, dto.getTags());
+        if (blog.getStatus() != 0) {
+            contentService.checkContent(blog.getContent(), blog.getId(), blog.getAuthorId());
+            log.debug("已异步调用checkContent");
+        }
+        return Result.success(blog);
     }
 
     @DeleteMapping("/delete/{blogId}")

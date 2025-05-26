@@ -33,10 +33,19 @@ public class AbnormalEvent {
 
     private String reason;
 
-    public static AbnormalEvent generateBlogEvent(Integer userId,String reason) {
+    public static AbnormalEvent generateLoginEvent(Integer userId, String reason) {
+        AbnormalEvent abnormalEvent = new AbnormalEvent();
+        abnormalEvent.setType(EVENT_ABNORMAL_LOGIN);
+        abnormalEvent.setUserId(userId);
+        abnormalEvent.setReason(reason);
+        return abnormalEvent;
+    }
+
+    public static AbnormalEvent generateBlogEvent(Integer userId, Integer blogId, String reason) {
         AbnormalEvent abnormalEvent = new AbnormalEvent();
         abnormalEvent.setType(EVENT_ABNORMAL_BLOG);
         abnormalEvent.setUserId(userId);
+        abnormalEvent.setBlogId(blogId);
         abnormalEvent.setReason(reason);
         return abnormalEvent;
     }

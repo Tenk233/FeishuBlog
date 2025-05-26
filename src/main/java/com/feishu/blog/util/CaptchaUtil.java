@@ -1,6 +1,7 @@
 package com.feishu.blog.util;
 
 import com.feishu.blog.entity.Captcha;
+import org.springframework.core.io.ClassPathResource;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -23,7 +24,7 @@ public class CaptchaUtil {
     /**
      * 本地图片地址
      **/
-    private final static String IMG_PATH = "Z:/image/%s.png";
+    private final static String IMG_PATH = "static/image/%s.png";
 
     /**
      * 入参校验设置默认值
@@ -79,8 +80,8 @@ public class CaptchaUtil {
         //获取本地图片
         else {
             String imgPath = String.format(IMG_PATH, nonce);
-            File file = new File(imgPath);
-            return ImageIO.read(file);
+//            File file = new File(imgPath);
+            return ImageIO.read(new ClassPathResource(imgPath).getInputStream());
         }
     }
 

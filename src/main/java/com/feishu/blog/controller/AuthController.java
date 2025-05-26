@@ -16,7 +16,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
@@ -72,7 +71,7 @@ public class AuthController {
                 User userTry = userService.getUserByUsername(dto.getUsername());
                 if (userTry != null) {
                     abnormalEventService.addAbnormalEvent(
-                            AbnormalEvent.generateBlogEvent(userTry.getId(), "连续错误登录次数太多")
+                            AbnormalEvent.generateLoginEvent(userTry.getId(), "连续错误登录次数太多")
                     );
                 }
 
