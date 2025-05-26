@@ -164,6 +164,11 @@
             <version>0.28.0</version> <!-- 请使用与您的 DJL 版本兼容的最新版本 -->
         </dependency>
         <dependency>
+            <groupId>ai.djl.huggingface</groupId>
+            <artifactId>tokenizers</artifactId>
+            <version>0.33.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <version>6.2.6</version>
