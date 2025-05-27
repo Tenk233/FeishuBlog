@@ -10,6 +10,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
 
@@ -189,12 +192,14 @@ public class LocalImageService {
             }
         }
 
+        ClassPathResource modelRes = new ClassPathResource("static/model.onnx");
+        Path modelPath = Files.createTempFile("model", ".onnx");
+        Files.copy(modelRes.getInputStream(), modelPath, StandardCopyOption.REPLACE_EXISTING);
         // 加载模型
         Criteria<Image, Classifications> criteria = Criteria.builder()
                 .optApplication(Application.CV.IMAGE_CLASSIFICATION)
                 .setTypes(Image.class, Classifications.class)
-                .optModelPath(new ClassPathResource("static/model.onnx").getFile().toPath())
-                .optModelName("model.onnx")
+                .optModelPath(modelPath)
                 .optEngine("OnnxRuntime")
                 .optTranslator(new CustomImageClassificationTranslator())
                 .optProgress(new ProgressBar())
