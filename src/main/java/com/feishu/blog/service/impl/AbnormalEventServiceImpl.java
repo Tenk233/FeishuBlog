@@ -44,10 +44,10 @@ public class AbnormalEventServiceImpl implements AbnormalEventService {
         if (dto.getPage() != null) {
             page = dto.getPage() - 1;
         }
-        dto.setPage(page * limit);
         if (dto.getLimit() != null) {
             limit = dto.getLimit();
         }
+        dto.setPage(page * limit);
         dto.setLimit(limit);
         return eventMapper.selectAbnormalEvent(dto);
     }
