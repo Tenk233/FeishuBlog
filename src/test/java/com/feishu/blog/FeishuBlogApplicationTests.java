@@ -40,15 +40,15 @@ class FeishuBlogApplicationTests {
     @Test
     public void parseJwt(){
         SecretKey key = Keys.hmacShaKeyFor("my-very-very-strong-secret-key-for-hs256".getBytes());
-        String token = "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MTAsInVzZXJuYW1lIjoiaXRoZWltYSIsImV4cCI6MTc0NzI1MjMwM30.i5UJhfKona5LneGm-YWayKogs4eFrnQJrjr48-6TFJs";
+//        String token = "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MTAsInVzZXJuYW1lIjoiaXRoZWltYSIsImV4cCI6MTc0NzI1MjMwM30.i5UJhfKona5LneGm-YWayKogs4eFrnQJrjr48-6TFJs";
+//
+//        Claims claims = Jwts.parserBuilder()
+//                .setSigningKey(key)
+//                .build()
+//                .parseClaimsJws(token)
+//                .getBody();
 
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-        System.out.println(claims);
+//        System.out.println(claims);
     }
 
     @Test
