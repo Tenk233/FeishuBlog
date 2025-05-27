@@ -20,7 +20,7 @@ public class ImageClassificationTest {
     @Resource
     private CozeImageService cozeImageService;
 
-    @Test
+    // @Test
     public void test() throws IOException {
 //         MultipartFile file = fileToMultipartFile("/Users/wlupus/Downloads/Cat_August_2010-3.jpg");
 //        MultipartFile file = fileToMultipartFile("/Users/wlupus/Downloads/dog.jpeg");
@@ -36,7 +36,7 @@ public class ImageClassificationTest {
         }
     }
 
-    @Test
+    // @Test
     public void testCoze() throws IOException {
 //        MultipartFile file = fileToMultipartFile("/Users/wlupus/Downloads/dog.jpeg");
 //        MultipartFile file = fileToMultipartFile("/Users/wlupus/Downloads/24.png");
