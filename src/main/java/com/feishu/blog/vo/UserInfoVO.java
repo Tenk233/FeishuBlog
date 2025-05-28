@@ -44,6 +44,11 @@ public class UserInfoVO {
     @JsonProperty("password_hash")
     private String passwordHash;
 
+    @JsonProperty("hashedPassword")
+    private String getHashedPassword() {
+        return passwordHash;
+    }
+
     private String phone;
 
     private String email;

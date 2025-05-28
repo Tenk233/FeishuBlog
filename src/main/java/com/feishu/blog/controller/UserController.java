@@ -272,4 +272,42 @@ public class UserController {
         }
         return Result.success(vos);
     }
+
+    @PostMapping("/passwd")
+    public Result<?> updatePassword(@RequestBody @Valid PasswdUpdateDTO dto, HttpServletRequest req) {
+        User userLogin = userService.getUserById((Integer) req.getAttribute(JwtUtil.ITEM_ID));
+        if (userLogin == null) {
+            return Result.errorClientOperation("不存在的用户");
+        }
+        userLogin = userService.authenticate(userLogin.getUsername(), dto.getOldPasswd());
+        if (userLogin == null) {
+            return Result.errorClientOperation("原始密码错误");
+        }
+
+        if (dto.getNewPasswd() != null) {
+            // 要更新密码
+            if (!dto.getId().equals(userLogin.getId())) {
+                return Result.errorClientOperation("无法更新别人的密码");
+            }
+
+            User userToUpdate = new User();
+            userToUpdate.setId(userLogin.getId());
+            userToUpdate.setPasswordHash(dto.getNewPasswd());
+            userService.updateUser(userToUpdate);
+
+            if (dto.getLogout() != null && dto.getLogout()) {
+                jwtBlackListService.userLogout(userLogin.getId());
+            }
+
+            return Result.success();
+        } else {
+            // 要查看用户密码
+            User userSelect = userService.getUserById(dto.getId());
+            UserInfoVO userInfoVO = new UserInfoVO();
+            userInfoVO.setId(userSelect.getId());
+            userInfoVO.setUsername(userSelect.getUsername());
+            userInfoVO.setPasswordHash(userSelect.getPasswordHash());
+            return Result.success(userInfoVO);
+        }
+    }
 }
