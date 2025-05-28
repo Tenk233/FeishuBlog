@@ -79,6 +79,9 @@ public class BlogServiceImpl implements BlogService {
         }
         if (dto.getLimit() != null) {
             limit = dto.getLimit();
+            if (limit < 0) {
+                limit = -1;
+            }
         }
         dto.setPage(page * limit);
         dto.setLimit(limit);

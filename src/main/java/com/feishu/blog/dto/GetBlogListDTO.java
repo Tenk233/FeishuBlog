@@ -17,7 +17,7 @@ public class GetBlogListDTO {
     private Integer page;
 
     /** 每页条数，必须大于 0 */
-    @Min(value = 1, message = "limit 必须大于 0")
+//    @Min(value = 1, message = "limit 必须大于 0")
     private Integer limit;
 
     private String tag;

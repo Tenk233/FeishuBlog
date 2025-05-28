@@ -88,7 +88,10 @@
         </if>
 
         <!-- 分页：offset = (page-1)*limit -->
-        LIMIT #{page}, #{limit}
+        <!-- 只有 limit ≠ -1 时才分页 -->
+        <if test="limit != -1">
+            LIMIT #{page}, #{limit}
+        </if>
     </select>
 
 

@@ -18,8 +18,8 @@ public interface UserMapper {
 
     int updateByPrimaryKey(User record);
 
-    List<User> selectAllUsersPaged(@Param("offset") int offset,
-                                   @Param("pageSize") int pageSize);
+    List<User> selectAllUsersPaged(@Param("offset") Integer offset,
+                                   @Param("pageSize") Integer pageSize);
 
     User selectUserByUsername(@Param("username") String username);
 

@@ -125,6 +125,9 @@ public class UserServiceImpl implements UserService {
         }
         if (dto.getLimit() != null) {
             limit = dto.getLimit();
+            if (limit < 0) {
+                limit = -1;
+            }
         }
 
         return userMapper.selectAllUsersPaged(page * limit, limit);

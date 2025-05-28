@@ -20,12 +20,12 @@ public class GetUserListDTO {
     )
     private String orderBy;
 
-    /** 页码，必须是自然数（>=0） */
-    @Min(value = 0, message = "page 必须大于或等于 0")
+    /** 页码，必须是正整数（> 1） */
+    @Min(value = 1, message = "page 必须大于 0")
     private Integer page;
 
     /** 每页条数，必须大于 0 */
-    @Min(value = 1, message = "limit 必须大于 1")
+//    @Min(value = 1, message = "limit 必须大于 1")
     private Integer limit;
 
     /**

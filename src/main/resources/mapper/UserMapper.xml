@@ -117,11 +117,13 @@
   <sql id="Base_Column_List">
     id, username, phone, email, `role`, password_hash, salt, register_time, avatar_url, is_blocked
   </sql>
-  <select id="selectAllUsersPaged" resultMap="BaseResultMap">
+  <select id="selectAllUsersPaged" parameterType="map" resultMap="BaseResultMap">
     SELECT
         <include refid="Base_Column_List" />
     FROM tb_user
-           LIMIT #{offset}, #{pageSize}
+    <if test="pageSize != -1">
+      LIMIT #{offset}, #{pageSize}
+    </if>
   </select>
   <select id="selectUserByUsername" resultMap="BaseResultMap">
     SELECT
